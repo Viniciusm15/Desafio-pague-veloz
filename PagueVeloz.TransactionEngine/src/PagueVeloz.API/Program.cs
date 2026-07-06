@@ -1,23 +1,29 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.MapOpenApi();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PagueVeloz API V1");
+    c.RoutePrefix = "swagger";
+});
+
+app.MapGet("/health", () => Results.Ok(new
+{
+    Status = "Healthy",
+    Timestamp = DateTime.UtcNow,
+    Environment = app.Environment.EnvironmentName
+}));
+
+app.MapGet("/", () => "PagueVeloz API is running! Acesse /swagger");
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
