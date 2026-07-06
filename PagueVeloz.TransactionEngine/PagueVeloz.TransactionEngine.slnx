@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PagueVeloz.API/PagueVeloz.API.csproj" />
+    <Project Path="src/PagueVeloz.Application/PagueVeloz.Application.csproj" />
+    <Project Path="src/PagueVeloz.Domain/PagueVeloz.Domain.csproj" />
+    <Project Path="src/PagueVeloz.Infrastructure/PagueVeloz.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PagueVeloz.Application.Tests/PagueVeloz.Application.Tests.csproj" />
+    <Project Path="tests/PagueVeloz.Domain.Tests/PagueVeloz.Domain.Tests.csproj" />
+    <Project Path="tests/PagueVeloz.IntegrationTests/PagueVeloz.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/workers/">
+    <Project Path="workers/PagueVeloz.Worker/PagueVeloz.Worker.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-PagueVeloz.Worker-c66cae4b-9a47-4c51-b63b-214ab81ec3e3</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.17" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PagueVeloz.Application\PagueVeloz.Application.csproj" />
+    <ProjectReference Include="..\..\src\PagueVeloz.Infrastructure\PagueVeloz.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
