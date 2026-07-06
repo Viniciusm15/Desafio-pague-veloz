@@ -4,6 +4,8 @@ obj/
 
 # Visual Studio
 .vs/
+*.user
+*.suo
 
 # VS Code
 .vscode/
