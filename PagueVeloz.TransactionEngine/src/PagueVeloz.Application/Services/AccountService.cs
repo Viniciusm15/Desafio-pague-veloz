@@ -64,4 +64,15 @@ public class AccountService : IAccountService
 
         return account;
     }
+
+    public async Task<Account> CaptureAsync(Guid accountId, Guid reserveOperationId)
+    {
+        var account = await _accountRepository.GetByIdAsync(accountId)
+            ?? throw new NotFoundException(nameof(Account), accountId);
+
+        account.Capture(reserveOperationId);
+        await _accountRepository.UpdateAsync(account);
+
+        return account;
+    }
 }
