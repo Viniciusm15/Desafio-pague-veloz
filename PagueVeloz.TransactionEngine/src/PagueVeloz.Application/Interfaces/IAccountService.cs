@@ -9,4 +9,5 @@ public interface IAccountService
     Task<Account> CreditAsync(Guid accountId, decimal amount);
     Task<Account> DebitAsync(Guid accountId, decimal amount);
     Task<Account> ReserveAsync(Guid accountId, decimal amount);
+    Task<Account> CaptureAsync(Guid accountId, Guid reserveOperationId);
 }
