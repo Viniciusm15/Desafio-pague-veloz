@@ -94,4 +94,32 @@ public class AccountController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpPost("{id}/reserve")]
+    public async Task<IActionResult> Reserve(Guid id, [FromBody] ReserveAccountRequest request)
+    {
+        try
+        {
+            var account = await _accountService.ReserveAsync(id, request.Amount);
+            return Ok(new
+            {
+                account.Id,
+                account.AvailableBalance,
+                account.ReservedBalance,
+                Message = $"Reserve of {request.Amount:C} completed successfully."
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }
