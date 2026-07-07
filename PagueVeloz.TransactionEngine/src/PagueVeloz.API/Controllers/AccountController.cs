@@ -24,7 +24,7 @@ public class AccountController : ControllerBase
             var account = await _accountService.OpenAccountAsync(request.CustomerId);
             return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
         }
-        catch (CustomerNotFoundException ex)
+        catch (NotFoundException ex)
         {
             return NotFound(new { error = ex.Message });
         }
