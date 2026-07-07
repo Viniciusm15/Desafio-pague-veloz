@@ -101,12 +101,22 @@ public class AccountController : ControllerBase
         try
         {
             var account = await _accountService.ReserveAsync(id, request.Amount);
+
             return Ok(new
             {
                 account.Id,
+                account.CustomerId,
                 account.AvailableBalance,
                 account.ReservedBalance,
-                Message = $"Reserve of {request.Amount:C} completed successfully."
+                Message = $"Reserve of {request.Amount:C} completed successfully.",
+                Operations = account.Operations.Select(o => new
+                {
+                    o.Id,
+                    o.AccountId,
+                    o.Type,
+                    o.Amount,
+                    o.OccurredAt
+                })
             });
         }
         catch (NotFoundException ex)
@@ -116,6 +126,30 @@ public class AccountController : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{id}/capture")]
+    public async Task<IActionResult> Capture(Guid id, [FromBody] CaptureAccountRequest request)
+    {
+        try
+        {
+            var account = await _accountService.CaptureAsync(id, request.ReserveOperationId);
+            return Ok(new
+            {
+                account.Id,
+                account.AvailableBalance,
+                account.ReservedBalance,
+                Message = "Capture completed successfully."
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
