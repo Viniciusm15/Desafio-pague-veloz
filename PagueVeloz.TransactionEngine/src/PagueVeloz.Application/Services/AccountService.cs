@@ -53,4 +53,15 @@ public class AccountService : IAccountService
 
         return account;
     }
+
+    public async Task<Account> ReserveAsync(Guid accountId, decimal amount)
+    {
+        var account = await _accountRepository.GetByIdAsync(accountId)
+            ?? throw new NotFoundException(nameof(Account), accountId);
+
+        account.Reserve(amount);
+        await _accountRepository.UpdateAsync(account);
+
+        return account;
+    }
 }
