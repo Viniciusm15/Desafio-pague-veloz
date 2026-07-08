@@ -1,4 +1,5 @@
-﻿using PagueVeloz.Application.Interfaces;
+﻿using PagueVeloz.Application.DTOs.Requests;
+using PagueVeloz.Application.Interfaces;
 using PagueVeloz.Domain.Entities;
 using PagueVeloz.Domain.Interfaces;
 
@@ -13,9 +14,9 @@ public class CustomerService : ICustomerService
         _customerRepository = customerRepository;
     }
 
-    public async Task<Customer> CreateAsync(string name, string document)
+    public async Task<Customer> CreateAsync(CreateCustomerRequest request)
     {
-        var customer = Customer.Create(name, document);
+        var customer = Customer.Create(request.Name, request.Document);
         await _customerRepository.AddAsync(customer);
 
         return customer;

@@ -20,7 +20,7 @@ public class CustomerController : ControllerBase
     {
         try
         {
-            var customer = await _customerService.CreateAsync(request.Name, request.Document);
+            var customer = await _customerService.CreateAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = customer.Id }, customer);
         }
         catch (ArgumentException ex)

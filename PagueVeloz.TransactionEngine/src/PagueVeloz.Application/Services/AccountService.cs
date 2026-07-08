@@ -1,4 +1,5 @@
-﻿using PagueVeloz.Application.Exceptions;
+﻿using PagueVeloz.Application.DTOs.Requests;
+using PagueVeloz.Application.Exceptions;
 using PagueVeloz.Application.Interfaces;
 using PagueVeloz.Domain.Entities;
 using PagueVeloz.Domain.Interfaces;
@@ -21,12 +22,12 @@ public class AccountService : IAccountService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Account> OpenAccountAsync(Guid customerId, decimal creditLimit = 0m)
+    public async Task<Account> OpenAccountAsync(CreateAccountRequest request)
     {
-        var customer = await _customerRepository.GetByIdAsync(customerId)
-            ?? throw new NotFoundException(nameof(Customer), customerId);
+        var customer = await _customerRepository.GetByIdAsync(request.CustomerId)
+            ?? throw new NotFoundException(nameof(Customer), request.CustomerId);
 
-        var account = Account.Open(customer.Id, creditLimit);
+        var account = Account.Open(customer.Id, request.CreditLimit);
         await _accountRepository.AddAsync(account);
 
         return account;
@@ -67,67 +68,66 @@ public class AccountService : IAccountService
         return account;
     }
 
-    public async Task<Account> CreditAsync(Guid accountId, decimal amount, string referenceId)
+    public async Task<Account> CreditAsync(Guid accountId, CreditAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Credit(amount, referenceId);
+        account.Credit(request.Amount, request.ReferenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<Account> DebitAsync(Guid accountId, decimal amount, string referenceId)
+    public async Task<Account> DebitAsync(Guid accountId, DebitAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Debit(amount, referenceId);
+        account.Debit(request.Amount, request.ReferenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<Account> ReserveAsync(Guid accountId, decimal amount, string referenceId)
+    public async Task<Account> ReserveAsync(Guid accountId, ReserveAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Reserve(amount, referenceId);
+        account.Reserve(request.Amount, request.ReferenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<Account> CaptureAsync(Guid accountId, Guid reserveOperationId, string referenceId)
+    public async Task<Account> CaptureAsync(Guid accountId, CaptureAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Capture(reserveOperationId, referenceId);
+        account.Capture(request.ReserveOperationId, request.ReferenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<Account> ReversalAsync(Guid accountId, Guid originalOperationId, string referenceId)
+    public async Task<Account> ReversalAsync(Guid accountId, ReversalAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Reversal(originalOperationId, referenceId);
+        account.Reversal(request.OriginalOperationId, request.ReferenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<(Account Source, Account Destination)> TransferAsync(
-        Guid sourceAccountId, Guid destinationAccountId, decimal amount, string referenceId)
+    public async Task<(Account Source, Account Destination)> TransferAsync(TransferRequest request)
     {
-        if (sourceAccountId == destinationAccountId)
+        if (request.SourceAccountId == request.DestinationAccountId)
             throw new ArgumentException("Source and destination accounts must be different.");
 
-        var source = await GetAccountByIdAsync(sourceAccountId);
-        var destination = await GetAccountByIdAsync(destinationAccountId);
+        var source = await GetAccountByIdAsync(request.SourceAccountId);
+        var destination = await GetAccountByIdAsync(request.DestinationAccountId);
 
-        source.Debit(amount, referenceId);
-        destination.Credit(amount, referenceId);
+        source.Debit(request.Amount, request.ReferenceId);
+        destination.Credit(request.Amount, request.ReferenceId);
 
         await _unitOfWork.SaveChangesAsync();
 

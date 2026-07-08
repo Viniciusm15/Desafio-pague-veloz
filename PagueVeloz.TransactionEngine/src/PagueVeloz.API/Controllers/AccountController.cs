@@ -21,7 +21,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.OpenAccountAsync(request.CustomerId, request.CreditLimit);
+            var account = await _accountService.OpenAccountAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
         }
         catch (NotFoundException ex)
@@ -71,7 +71,8 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.CreditAsync(id, request.Amount, request.ReferenceId);
+            var account = await _accountService.CreditAsync(id, request);
+
             return Ok(new
             {
                 account.Id,
@@ -94,7 +95,8 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.DebitAsync(id, request.Amount, request.ReferenceId);
+            var account = await _accountService.DebitAsync(id, request);
+
             return Ok(new
             {
                 account.Id,
@@ -121,7 +123,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.ReserveAsync(id, request.Amount, request.ReferenceId);
+            var account = await _accountService.ReserveAsync(id, request);
 
             return Ok(new
             {
@@ -159,7 +161,8 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.CaptureAsync(id, request.ReserveOperationId, request.ReferenceId);
+            var account = await _accountService.CaptureAsync(id, request);
+
             return Ok(new
             {
                 account.Id,
@@ -183,7 +186,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.ReversalAsync(id, request.OriginalOperationId, request.ReferenceId);
+            var account = await _accountService.ReversalAsync(id, request);
 
             return Ok(new
             {
@@ -208,8 +211,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var (source, destination) = await _accountService.TransferAsync(
-                request.SourceAccountId, request.DestinationAccountId, request.Amount, request.ReferenceId);
+            var (source, destination) = await _accountService.TransferAsync(request);
 
             return Ok(new
             {
