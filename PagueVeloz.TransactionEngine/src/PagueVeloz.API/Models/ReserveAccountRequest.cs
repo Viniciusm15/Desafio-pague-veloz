@@ -1,3 +1,3 @@
 ﻿namespace PagueVeloz.API.Models;
 
-public record ReserveAccountRequest(decimal Amount);
+public record ReserveAccountRequest(decimal Amount, string ReferenceId);
