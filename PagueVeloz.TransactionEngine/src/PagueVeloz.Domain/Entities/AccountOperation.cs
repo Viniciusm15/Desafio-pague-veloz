@@ -11,6 +11,7 @@ public class AccountOperation
     public decimal Amount { get; private set; }
     public string Currency { get; private set; } = string.Empty;
     public string? Metadata { get; private set; }
+    public OperationStatus Status { get; private set; }
     public string ReferenceId { get; private set; } = string.Empty;
     public DateTime OccurredAt { get; private set; }
 
@@ -21,6 +22,7 @@ public class AccountOperation
     OperationType type,
     decimal amount,
     string currency,
+    OperationStatus status,
     string referenceId,
     Dictionary<string, object>? metadata = null)
     {
@@ -29,8 +31,27 @@ public class AccountOperation
         Type = type;
         Amount = amount;
         Currency = currency;
+        Status = status;
         ReferenceId = referenceId;
         OccurredAt = DateTime.UtcNow;
         Metadata = metadata is not null ? JsonSerializer.Serialize(metadata) : null;
     }
+
+    public static AccountOperation Succeeded(
+        Guid accountId,
+        OperationType type,
+        decimal amount,
+        string currency,
+        string referenceId,
+        Dictionary<string, object>? metadata = null)
+        => new(accountId, type, amount, currency, OperationStatus.Success, referenceId, metadata);
+
+    public static AccountOperation Failed(
+        Guid accountId,
+        OperationType type,
+        decimal amount,
+        string currency,
+        string referenceId,
+        Dictionary<string, object>? metadata = null)
+        => new(accountId, type, amount, currency, OperationStatus.Failed, referenceId, metadata);
 }

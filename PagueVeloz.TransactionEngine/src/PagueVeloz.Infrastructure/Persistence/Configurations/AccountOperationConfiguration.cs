@@ -12,9 +12,6 @@ public class AccountOperationConfiguration : IEntityTypeConfiguration<AccountOpe
         builder.HasKey(o => o.Id);
         builder.Property(a => a.Id).ValueGeneratedNever();
 
-        builder.Property(o => o.Id)
-            .ValueGeneratedNever();
-
         builder.Property(o => o.Type)
             .HasConversion<string>()
             .HasMaxLength(20);
@@ -31,14 +28,19 @@ public class AccountOperationConfiguration : IEntityTypeConfiguration<AccountOpe
           .HasDefaultValue(null)
           .IsRequired(false);
 
+        builder.Property(o => o.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .IsRequired();
+
         builder.Property(o => o.ReferenceId)
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.HasIndex(o => new { o.AccountId, o.ReferenceId })
-            .IsUnique();
-
         builder.Property(o => o.OccurredAt)
             .IsRequired();
+
+        builder.HasIndex(o => new { o.AccountId, o.ReferenceId })
+            .IsUnique();
     }
 }

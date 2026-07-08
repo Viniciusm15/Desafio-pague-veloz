@@ -6,5 +6,6 @@ public enum OperationType
     Debit = 2,
     Reserve = 3,
     Capture = 4,
-    Reversal = 5
+    Reversal = 5,
+    Transfer = 6
 }

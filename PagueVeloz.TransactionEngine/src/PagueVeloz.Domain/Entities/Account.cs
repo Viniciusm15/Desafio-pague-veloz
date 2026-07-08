@@ -1,5 +1,4 @@
 ﻿using PagueVeloz.Domain.Enums;
-using PagueVeloz.Domain.Interfaces;
 
 namespace PagueVeloz.Domain.Entities;
 
@@ -43,13 +42,11 @@ public class Account
             return existing!;
 
         EnsureActive();
-
-        if (amount <= 0)
-            throw new ArgumentException("Credit amount must be greater than zero.");
+        EnsurePositiveAmount(amount);
 
         AvailableBalance += amount;
 
-        var operation = new AccountOperation(Id, OperationType.Credit, amount, currency, referenceId, metadata);
+        var operation = AccountOperation.Succeeded(Id, OperationType.Credit, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
@@ -61,9 +58,7 @@ public class Account
             return existing!;
 
         EnsureActive();
-
-        if (amount <= 0)
-            throw new ArgumentException("Debit amount must be greater than zero.");
+        EnsurePositiveAmount(amount);
 
         var availableWithCreditLimit = AvailableBalance + CreditLimit;
         if (amount > availableWithCreditLimit)
@@ -71,7 +66,7 @@ public class Account
 
         AvailableBalance -= amount;
 
-        var operation = new AccountOperation(Id, OperationType.Debit, amount, currency, referenceId, metadata);
+        var operation = AccountOperation.Succeeded(Id, OperationType.Debit, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
@@ -83,9 +78,7 @@ public class Account
             return existing!;
 
         EnsureActive();
-
-        if (amount <= 0)
-            throw new ArgumentException("Reserve amount must be greater than zero.");
+        EnsurePositiveAmount(amount);
 
         if (amount > AvailableBalance)
             throw new InvalidOperationException("Insufficient available balance for reservation.");
@@ -93,7 +86,7 @@ public class Account
         AvailableBalance -= amount;
         ReservedBalance += amount;
 
-        var operation = new AccountOperation(Id, OperationType.Reserve, amount, currency, referenceId, metadata);
+        var operation = AccountOperation.Succeeded(Id, OperationType.Reserve, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
@@ -116,7 +109,7 @@ public class Account
 
         ReservedBalance -= amount;
 
-        var operation = new AccountOperation(Id, OperationType.Capture, amount, currency, referenceId, metadata);
+        var operation = AccountOperation.Succeeded(Id, OperationType.Capture, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
@@ -153,7 +146,7 @@ public class Account
                 throw new InvalidOperationException($"Operations of type '{originalOperation.Type}' cannot be reversed.");
         }
 
-        var operation = new AccountOperation(Id, OperationType.Reversal, amount, currency, referenceId, metadata);
+        var operation = AccountOperation.Succeeded(Id, OperationType.Reversal, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
@@ -165,6 +158,12 @@ public class Account
     {
         if (Status != AccountStatus.Active)
             throw new InvalidOperationException($"Account {Id} is {Status}. Only active accounts can perform operations.");
+    }
+
+    private static void EnsurePositiveAmount(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Amount must be greater than zero.", nameof(amount));
     }
 
     private bool TryGetExistingOperation(string referenceId, out AccountOperation? operation)
