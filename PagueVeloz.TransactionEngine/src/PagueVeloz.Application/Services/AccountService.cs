@@ -72,7 +72,7 @@ public class AccountService : IAccountService
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Credit(request.Amount, request.ReferenceId);
+        account.Credit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
@@ -82,7 +82,7 @@ public class AccountService : IAccountService
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Debit(request.Amount, request.ReferenceId);
+        account.Debit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
@@ -92,7 +92,7 @@ public class AccountService : IAccountService
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Reserve(request.Amount, request.ReferenceId);
+        account.Reserve(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
@@ -102,7 +102,7 @@ public class AccountService : IAccountService
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Capture(request.ReserveOperationId, request.ReferenceId);
+        account.Capture(request.ReserveOperationId, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
@@ -121,14 +121,14 @@ public class AccountService : IAccountService
         {
             var otherAccount = await GetAccountByIdAsync(otherOperation.AccountId);
 
-            account.Reversal(request.OriginalOperationId, request.ReferenceId);
-            otherAccount.Reversal(otherOperation.Id, request.ReferenceId);
+            account.Reversal(request.OriginalOperationId, request.ReferenceId, request.Currency, request.Metadata);
+            otherAccount.Reversal(otherOperation.Id, request.ReferenceId, request.Currency, request.Metadata);
             await _unitOfWork.SaveChangesAsync();
 
             return account;
         }
 
-        account.Reversal(request.OriginalOperationId, request.ReferenceId);
+        account.Reversal(request.OriginalOperationId, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
         return account;
     }
@@ -141,8 +141,8 @@ public class AccountService : IAccountService
         var source = await GetAccountByIdAsync(request.SourceAccountId);
         var destination = await GetAccountByIdAsync(request.DestinationAccountId);
 
-        source.Debit(request.Amount, request.ReferenceId);
-        destination.Credit(request.Amount, request.ReferenceId);
+        source.Debit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
+        destination.Credit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
 
         await _unitOfWork.SaveChangesAsync();
 

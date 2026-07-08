@@ -1,4 +1,5 @@
-﻿using PagueVeloz.Domain.Enums;
+﻿using System.Text.Json;
+using PagueVeloz.Domain.Enums;
 
 namespace PagueVeloz.Domain.Entities;
 
@@ -42,7 +43,7 @@ public class Account
             throw new InvalidOperationException($"Account {Id} is {Status}. Only active accounts can perform operations.");
     }
 
-    public AccountOperation Credit(decimal amount, string referenceId)
+    public AccountOperation Credit(decimal amount, string referenceId, string currency, Dictionary<string, object>? metadata = null)
     {
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
@@ -55,13 +56,13 @@ public class Account
 
         AvailableBalance += amount;
 
-        var operation = new AccountOperation(Id, OperationType.Credit, amount, referenceId);
+        var operation = new AccountOperation(Id, OperationType.Credit, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
     }
 
-    public AccountOperation Debit(decimal amount, string referenceId)
+    public AccountOperation Debit(decimal amount, string referenceId, string currency, Dictionary<string, object>? metadata = null)
     {
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
@@ -78,13 +79,13 @@ public class Account
 
         AvailableBalance -= amount;
 
-        var operation = new AccountOperation(Id, OperationType.Debit, amount, referenceId);
+        var operation = new AccountOperation(Id, OperationType.Debit, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
     }
 
-    public AccountOperation Reserve(decimal amount, string referenceId)
+    public AccountOperation Reserve(decimal amount, string referenceId, string currency, Dictionary<string, object>? metadata = null)
     {
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
@@ -101,13 +102,13 @@ public class Account
         AvailableBalance -= amount;
         ReservedBalance += amount;
 
-        var operation = new AccountOperation(Id, OperationType.Reserve, amount, referenceId);
+        var operation = new AccountOperation(Id, OperationType.Reserve, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
     }
 
-    public AccountOperation Capture(Guid reserveOperationId, string referenceId)
+    public AccountOperation Capture(Guid reserveOperationId, string referenceId, string currency, Dictionary<string, object>? metadata = null)
     {
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
@@ -125,13 +126,13 @@ public class Account
 
         ReservedBalance -= amount;
 
-        var operation = new AccountOperation(Id, OperationType.Capture, amount, referenceId);
+        var operation = new AccountOperation(Id, OperationType.Capture, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;
     }
 
-    public AccountOperation Reversal(Guid originalOperationId, string referenceId)
+    public AccountOperation Reversal(Guid originalOperationId, string referenceId, string currency, Dictionary<string, object>? metadata = null)
     {
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
@@ -163,7 +164,7 @@ public class Account
                 throw new InvalidOperationException($"Operations of type '{originalOperation.Type}' cannot be reversed.");
         }
 
-        var operation = new AccountOperation(Id, OperationType.Reversal, amount, referenceId);
+        var operation = new AccountOperation(Id, OperationType.Reversal, amount, currency, referenceId, metadata);
         _operations.Add(operation);
 
         return operation;

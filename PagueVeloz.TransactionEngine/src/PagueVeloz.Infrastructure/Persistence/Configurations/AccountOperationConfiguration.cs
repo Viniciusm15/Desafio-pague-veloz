@@ -22,6 +22,15 @@ public class AccountOperationConfiguration : IEntityTypeConfiguration<AccountOpe
         builder.Property(o => o.Amount)
             .HasColumnType("decimal(18,2)");
 
+        builder.Property(o => o.Currency)
+            .HasMaxLength(3)
+            .IsRequired();
+
+        builder.Property(o => o.Metadata)
+          .HasColumnType("jsonb")
+          .HasDefaultValue(null)
+          .IsRequired(false);
+
         builder.Property(o => o.ReferenceId)
             .HasMaxLength(100)
             .IsRequired();
