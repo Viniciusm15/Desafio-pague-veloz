@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PagueVeloz.API.Models;
 using PagueVeloz.Application.Exceptions;
-using PagueVeloz.Application.Interfaces;
 
 namespace PagueVeloz.API.Controllers;
 
@@ -50,7 +49,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.CreditAsync(id, request.Amount);
+            var account = await _accountService.CreditAsync(id, request.Amount, request.ReferenceId);
             return Ok(new
             {
                 account.Id,
@@ -73,7 +72,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.DebitAsync(id, request.Amount);
+            var account = await _accountService.DebitAsync(id, request.Amount, request.ReferenceId);
             return Ok(new
             {
                 account.Id,
@@ -100,7 +99,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.ReserveAsync(id, request.Amount);
+            var account = await _accountService.ReserveAsync(id, request.Amount, request.ReferenceId);
 
             return Ok(new
             {
@@ -138,7 +137,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.CaptureAsync(id, request.ReserveOperationId);
+            var account = await _accountService.CaptureAsync(id, request.ReserveOperationId, request.ReferenceId);
             return Ok(new
             {
                 account.Id,
@@ -162,7 +161,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = await _accountService.ReversalAsync(id, request.OriginalOperationId);
+            var account = await _accountService.ReversalAsync(id, request.OriginalOperationId, request.ReferenceId);
 
             return Ok(new
             {
@@ -188,7 +187,7 @@ public class AccountController : ControllerBase
         try
         {
             var (source, destination) = await _accountService.TransferAsync(
-                request.SourceAccountId, request.DestinationAccountId, request.Amount);
+                request.SourceAccountId, request.DestinationAccountId, request.Amount, request.ReferenceId);
 
             return Ok(new
             {
