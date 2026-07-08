@@ -11,4 +11,5 @@ public interface IAccountService
     Task<Account> ReserveAsync(Guid accountId, decimal amount);
     Task<Account> CaptureAsync(Guid accountId, Guid reserveOperationId);
     Task<Account> ReversalAsync(Guid accountId, Guid originalOperationId);
+    Task<(Account Source, Account Destination)> TransferAsync(Guid sourceAccountId, Guid destinationAccountId, decimal amount);
 }

@@ -181,4 +181,33 @@ public class AccountController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpPost("transfer")]
+    public async Task<IActionResult> Transfer([FromBody] TransferRequest request)
+    {
+        try
+        {
+            var (source, destination) = await _accountService.TransferAsync(
+                request.SourceAccountId, request.DestinationAccountId, request.Amount);
+
+            return Ok(new
+            {
+                Source = new { source.Id, source.AvailableBalance },
+                Destination = new { destination.Id, destination.AvailableBalance },
+                Message = $"Transfer of {request.Amount:C} completed successfully."
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

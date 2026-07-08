@@ -91,4 +91,24 @@ public class AccountService : IAccountService
 
         return account;
     }
+
+    public async Task<(Account Source, Account Destination)> TransferAsync(
+        Guid sourceAccountId, Guid destinationAccountId, decimal amount)
+    {
+        if (sourceAccountId == destinationAccountId)
+            throw new ArgumentException("Source and destination accounts must be different.");
+
+        var source = await _accountRepository.GetByIdAsync(sourceAccountId)
+            ?? throw new NotFoundException(nameof(Account), sourceAccountId);
+
+        var destination = await _accountRepository.GetByIdAsync(destinationAccountId)
+            ?? throw new NotFoundException(nameof(Account), destinationAccountId);
+
+        source.Debit(amount);
+        destination.Credit(amount);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return (source, destination);
+    }
 }
