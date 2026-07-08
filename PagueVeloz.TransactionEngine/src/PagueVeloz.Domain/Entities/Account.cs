@@ -8,21 +8,26 @@ public class Account
     public Guid CustomerId { get; private set; }
     public decimal AvailableBalance { get; private set; }
     public decimal ReservedBalance { get; private set; }
+    public decimal CreditLimit { get; private set; }
 
     private readonly List<AccountOperation> _operations = new();
     public IReadOnlyCollection<AccountOperation> Operations => _operations.AsReadOnly();
 
-    private Account(Guid customerId)
+    private Account(Guid customerId, decimal creditLimit)
     {
         Id = Guid.NewGuid();
         CustomerId = customerId;
         AvailableBalance = 0m;
         ReservedBalance = 0m;
+        CreditLimit = creditLimit;
     }
 
-    public static Account Open(Guid customerId)
+    public static Account Open(Guid customerId, decimal creditLimit = 0m)
     {
-        return new Account(customerId);
+        if (creditLimit < 0)
+            throw new ArgumentException("Credit limit cannot be negative.");
+
+        return new Account(customerId, creditLimit);
     }
 
     public void Credit(decimal amount)
@@ -37,10 +42,12 @@ public class Account
     public void Debit(decimal amount)
     {
         if (amount <= 0)
-            throw new ArgumentException("Debit amount must be greater than zero.", nameof(amount));
+            throw new ArgumentException("Debit amount must be greater than zero.");
 
-        if (amount > AvailableBalance)
-            throw new InvalidOperationException($"Insufficient balance. Available: {AvailableBalance}, Requested: {amount}");
+        var availableWithCreditLimit = AvailableBalance + CreditLimit;
+
+        if (amount > availableWithCreditLimit)
+            throw new InvalidOperationException("Insufficient funds to complete the debit.");
 
         AvailableBalance -= amount;
         _operations.Add(new AccountOperation(Id, OperationType.Debit, amount));

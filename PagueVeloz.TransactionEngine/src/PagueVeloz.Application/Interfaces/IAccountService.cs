@@ -4,7 +4,7 @@ namespace PagueVeloz.Application.Interfaces;
 
 public interface IAccountService
 {
-    Task<Account> OpenAccountAsync(Guid customerId);
+    Task<Account> OpenAccountAsync(Guid customerId, decimal creditLimit = 0m);
     Task<Account?> GetByIdAsync(Guid accountId);
     Task<Account> CreditAsync(Guid accountId, decimal amount);
     Task<Account> DebitAsync(Guid accountId, decimal amount);

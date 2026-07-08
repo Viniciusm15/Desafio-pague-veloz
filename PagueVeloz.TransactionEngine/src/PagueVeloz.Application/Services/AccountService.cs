@@ -21,12 +21,12 @@ public class AccountService : IAccountService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Account> OpenAccountAsync(Guid customerId)
+    public async Task<Account> OpenAccountAsync(Guid customerId, decimal creditLimit = 0m)
     {
         var customer = await _customerRepository.GetByIdAsync(customerId)
             ?? throw new NotFoundException(nameof(Customer), customerId);
 
-        var account = Account.Open(customer.Id);
+        var account = Account.Open(customer.Id, creditLimit);
         await _accountRepository.AddAsync(account);
 
         return account;
