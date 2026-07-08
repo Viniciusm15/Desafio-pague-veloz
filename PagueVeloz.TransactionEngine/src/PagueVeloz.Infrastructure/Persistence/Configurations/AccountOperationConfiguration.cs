@@ -22,6 +22,13 @@ public class AccountOperationConfiguration : IEntityTypeConfiguration<AccountOpe
         builder.Property(o => o.Amount)
             .HasColumnType("decimal(18,2)");
 
+        builder.Property(o => o.ReferenceId)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.HasIndex(o => new { o.AccountId, o.ReferenceId })
+            .IsUnique();
+
         builder.Property(o => o.OccurredAt)
             .IsRequired();
     }
