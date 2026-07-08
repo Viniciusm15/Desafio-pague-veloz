@@ -1,5 +1,4 @@
 ﻿using PagueVeloz.Application.Exceptions;
-using PagueVeloz.Application.Interfaces;
 using PagueVeloz.Domain.Entities;
 using PagueVeloz.Domain.Interfaces;
 
@@ -37,63 +36,63 @@ public class AccountService : IAccountService
         return _accountRepository.GetByIdAsync(accountId);
     }
 
-    public async Task<Account> CreditAsync(Guid accountId, decimal amount)
+    public async Task<Account> CreditAsync(Guid accountId, decimal amount, string referenceId)
     {
         var account = await _accountRepository.GetByIdAsync(accountId)
             ?? throw new NotFoundException(nameof(Account), accountId);
 
-        account.Credit(amount);
+        account.Credit(amount, referenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<Account> DebitAsync(Guid accountId, decimal amount)
+    public async Task<Account> DebitAsync(Guid accountId, decimal amount, string referenceId)
     {
         var account = await _accountRepository.GetByIdAsync(accountId)
             ?? throw new NotFoundException(nameof(Account), accountId);
 
-        account.Debit(amount);
+        account.Debit(amount, referenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<Account> ReserveAsync(Guid accountId, decimal amount)
+    public async Task<Account> ReserveAsync(Guid accountId, decimal amount, string referenceId)
     {
         var account = await _accountRepository.GetByIdAsync(accountId)
             ?? throw new NotFoundException(nameof(Account), accountId);
 
-        account.Reserve(amount);
+        account.Reserve(amount, referenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<Account> CaptureAsync(Guid accountId, Guid reserveOperationId)
+    public async Task<Account> CaptureAsync(Guid accountId, Guid reserveOperationId, string referenceId)
     {
         var account = await _accountRepository.GetByIdAsync(accountId)
             ?? throw new NotFoundException(nameof(Account), accountId);
 
-        account.Capture(reserveOperationId);
+        account.Capture(reserveOperationId, referenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
-    public async Task<Account> ReversalAsync(Guid accountId, Guid originalOperationId)
+    public async Task<Account> ReversalAsync(Guid accountId, Guid originalOperationId, string referenceId)
     {
         var account = await _accountRepository.GetByIdAsync(accountId)
             ?? throw new NotFoundException(nameof(Account), accountId);
 
-        account.Reversal(originalOperationId);
+        account.Reversal(originalOperationId, referenceId);
         await _unitOfWork.SaveChangesAsync();
 
         return account;
     }
 
     public async Task<(Account Source, Account Destination)> TransferAsync(
-        Guid sourceAccountId, Guid destinationAccountId, decimal amount)
+        Guid sourceAccountId, Guid destinationAccountId, decimal amount, string referenceId)
     {
         if (sourceAccountId == destinationAccountId)
             throw new ArgumentException("Source and destination accounts must be different.");
@@ -104,8 +103,8 @@ public class AccountService : IAccountService
         var destination = await _accountRepository.GetByIdAsync(destinationAccountId)
             ?? throw new NotFoundException(nameof(Account), destinationAccountId);
 
-        source.Debit(amount);
-        destination.Credit(amount);
+        source.Debit(amount, referenceId);
+        destination.Credit(amount, referenceId);
 
         await _unitOfWork.SaveChangesAsync();
 
