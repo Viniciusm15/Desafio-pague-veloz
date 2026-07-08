@@ -1,4 +1,5 @@
 ﻿using PagueVeloz.Application.Exceptions;
+using PagueVeloz.Application.Interfaces;
 using PagueVeloz.Domain.Entities;
 using PagueVeloz.Domain.Interfaces;
 
@@ -34,6 +35,39 @@ public class AccountService : IAccountService
     public Task<Account?> GetByIdAsync(Guid accountId)
     {
         return _accountRepository.GetByIdAsync(accountId);
+    }
+
+    public async Task<Account> BlockAsync(Guid accountId)
+    {
+        var account = await _accountRepository.GetByIdAsync(accountId)
+            ?? throw new NotFoundException(nameof(Account), accountId);
+
+        account.Block();
+        await _unitOfWork.SaveChangesAsync();
+
+        return account;
+    }
+
+    public async Task<Account> ReactivateAsync(Guid accountId)
+    {
+        var account = await _accountRepository.GetByIdAsync(accountId)
+            ?? throw new NotFoundException(nameof(Account), accountId);
+
+        account.Activate();
+        await _unitOfWork.SaveChangesAsync();
+
+        return account;
+    }
+
+    public async Task<Account> DeactivateAsync(Guid accountId)
+    {
+        var account = await _accountRepository.GetByIdAsync(accountId)
+            ?? throw new NotFoundException(nameof(Account), accountId);
+
+        account.Deactivate();
+        await _unitOfWork.SaveChangesAsync();
+
+        return account;
     }
 
     public async Task<Account> CreditAsync(Guid accountId, decimal amount, string referenceId)

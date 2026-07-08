@@ -9,6 +9,7 @@ public class Account
     public decimal AvailableBalance { get; private set; }
     public decimal ReservedBalance { get; private set; }
     public decimal CreditLimit { get; private set; }
+    public AccountStatus Status { get; private set; }
 
     private readonly List<AccountOperation> _operations = new();
     public IReadOnlyCollection<AccountOperation> Operations => _operations.AsReadOnly();
@@ -20,6 +21,7 @@ public class Account
         AvailableBalance = 0m;
         ReservedBalance = 0m;
         CreditLimit = creditLimit;
+        Status = AccountStatus.Active;
     }
 
     public static Account Open(Guid customerId, decimal creditLimit = 0m)
@@ -30,11 +32,23 @@ public class Account
         return new Account(customerId, creditLimit);
     }
 
+    public void Activate() => Status = AccountStatus.Active;
+    public void Deactivate() => Status = AccountStatus.Inactive;
+    public void Block() => Status = AccountStatus.Blocked;
+
+    private void EnsureActive()
+    {
+        if (Status != AccountStatus.Active)
+            throw new InvalidOperationException($"Account {Id} is {Status}. Only active accounts can perform operations.");
+    }
+
     public AccountOperation Credit(decimal amount, string referenceId)
     {
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
             return existingOperation;
+
+        EnsureActive();
 
         if (amount <= 0)
             throw new ArgumentException("Credit amount must be greater than zero.");
@@ -52,6 +66,8 @@ public class Account
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
             return existingOperation;
+
+        EnsureActive();
 
         if (amount <= 0)
             throw new ArgumentException("Debit amount must be greater than zero.");
@@ -74,6 +90,8 @@ public class Account
         if (existingOperation is not null)
             return existingOperation;
 
+        EnsureActive();
+
         if (amount <= 0)
             throw new ArgumentException("Reserve amount must be greater than zero.");
 
@@ -94,6 +112,8 @@ public class Account
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
             return existingOperation;
+
+        EnsureActive();
 
         var reservation = _operations.FirstOrDefault(o => o.Id == reserveOperationId)
             ?? throw new InvalidOperationException($"Reservation {reserveOperationId} not found.");
@@ -116,6 +136,8 @@ public class Account
         var existingOperation = _operations.FirstOrDefault(o => o.ReferenceId == referenceId);
         if (existingOperation is not null)
             return existingOperation;
+
+        EnsureActive();
 
         var originalOperation = _operations.FirstOrDefault(o => o.Id == originalOperationId)
             ?? throw new InvalidOperationException($"Operation {originalOperationId} not found.");

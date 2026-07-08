@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PagueVeloz.Domain.Entities;
+using PagueVeloz.Domain.Enums;
 
 namespace PagueVeloz.Infrastructure.Persistence.Configurations;
 
@@ -28,6 +29,12 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
             .HasColumnType("decimal(18,2)")
             .HasDefaultValue(0m)
             .IsRequired();
+
+        builder.Property(a => a.Status)
+           .HasConversion<string>()
+           .HasMaxLength(20)
+           .HasDefaultValue(AccountStatus.Active)
+           .HasSentinel(AccountStatus.Active);
 
         builder.HasOne<Customer>()
             .WithMany()

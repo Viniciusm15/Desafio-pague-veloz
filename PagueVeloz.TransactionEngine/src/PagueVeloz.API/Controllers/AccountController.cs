@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PagueVeloz.API.Models;
 using PagueVeloz.Application.Exceptions;
+using PagueVeloz.Application.Interfaces;
 
 namespace PagueVeloz.API.Controllers;
 
@@ -41,6 +42,27 @@ public class AccountController : ControllerBase
         if (account is null)
             return NotFound();
 
+        return Ok(account);
+    }
+
+    [HttpPost("{id}/block")]
+    public async Task<IActionResult> Block(Guid id)
+    {
+        var account = await _accountService.BlockAsync(id);
+        return Ok(account);
+    }
+
+    [HttpPost("{id}/reactivate")]
+    public async Task<IActionResult> Reactivate(Guid id)
+    {
+        var account = await _accountService.ReactivateAsync(id);
+        return Ok(account);
+    }
+
+    [HttpPost("{id}/deactivate")]
+    public async Task<IActionResult> Deactivate(Guid id)
+    {
+        var account = await _accountService.DeactivateAsync(id);
         return Ok(account);
     }
 
