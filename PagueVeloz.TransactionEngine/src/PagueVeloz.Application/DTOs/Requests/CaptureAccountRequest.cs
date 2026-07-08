@@ -1,3 +1,3 @@
-﻿namespace PagueVeloz.API.Models;
+﻿namespace PagueVeloz.Application.DTOs.Requests;
 
 public record CaptureAccountRequest(Guid ReserveOperationId, string ReferenceId);

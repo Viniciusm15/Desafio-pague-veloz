@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PagueVeloz.API.Models;
+using PagueVeloz.Application.DTOs.Requests;
 using PagueVeloz.Application.Exceptions;
 using PagueVeloz.Application.Interfaces;
 
