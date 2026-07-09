@@ -109,35 +109,30 @@ public class AccountService : IAccountService
         return (account, operation);
     }
 
-    public async Task<(Account Account, AccountOperation Operation, Account? OtherAccount, AccountOperation? OtherOperation)> ReversalAsync(Guid accountId, ReversalAccountRequest request)
+    public async Task<(Account Account, AccountOperation Operation)> ReversalAsync(Guid accountId, ReversalAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
-
         var originalOperation = account.Operations.FirstOrDefault(o => o.Id == request.OriginalOperationId);
-        Account? otherAccount = null;
-        AccountOperation? pairedOperation = null;
-
-        if (originalOperation is not null)
-        {
-            var allOperations = await _accountRepository.GetOperationsByReferenceIdAsync(originalOperation.ReferenceId);
-            pairedOperation = allOperations.FirstOrDefault(o => o.AccountId != accountId);
-
-            if (pairedOperation is not null)
-                otherAccount = await GetAccountByIdAsync(pairedOperation.AccountId);
-        }
-
         var operation = account.Reversal(request.OriginalOperationId, request.ReferenceId, request.Currency, request.Metadata);
 
-        AccountOperation? otherOperation = null;
-        if (otherAccount is not null && pairedOperation is not null && operation.Status == OperationStatus.Success)
-            otherOperation = otherAccount.Reversal(pairedOperation.Id, request.ReferenceId, request.Currency, request.Metadata);
+        if (originalOperation is not null && operation.Status == OperationStatus.Success)
+        {
+            var allOperations = await _accountRepository.GetOperationsByReferenceIdAsync(originalOperation.ReferenceId);
+            var pairedOperation = allOperations.FirstOrDefault(o => o.AccountId != accountId);
+
+            if (pairedOperation is not null)
+            {
+                var otherAccount = await GetAccountByIdAsync(pairedOperation.AccountId);
+                otherAccount.Reversal(pairedOperation.Id, request.ReferenceId, request.Currency, request.Metadata);
+            }
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
-        return (account, operation, otherAccount, otherOperation);
+        return (account, operation);
     }
 
-    public async Task<(Account Source, AccountOperation SourceOperation, Account Destination, AccountOperation DestinationOperation)> TransferAsync(TransferAccountRequest request)
+    public async Task<(Account Account, AccountOperation Operation)> TransferAsync(TransferAccountRequest request)
     {
         if (request.SourceAccountId == request.DestinationAccountId)
             throw new ArgumentException("Source and destination accounts must be different.");
@@ -146,22 +141,11 @@ public class AccountService : IAccountService
         var destination = await GetAccountByIdAsync(request.DestinationAccountId);
 
         var sourceOperation = source.Debit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
-
-        AccountOperation destinationOperation;
-        if (sourceOperation.Status == OperationStatus.Success)
-        {
-            destinationOperation = destination.Credit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
-        }
-        else
-        {
-            destinationOperation = AccountOperation.Failed(
-                destination.Id, OperationType.Credit, request.Amount, request.Currency,
-                request.ReferenceId, "Transfer aborted: source debit failed.", request.Metadata);
-        }
+        destination.Credit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
 
         await _unitOfWork.SaveChangesAsync();
 
-        return (source, sourceOperation, destination, destinationOperation);
+        return (source, sourceOperation);
     }
 
     #region Private Methods

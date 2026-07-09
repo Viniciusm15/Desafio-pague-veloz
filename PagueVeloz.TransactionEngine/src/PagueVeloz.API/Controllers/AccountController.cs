@@ -40,75 +40,69 @@ public class AccountController : ControllerBase
     [HttpPost("{id}/deactivate")]
     public async Task<IActionResult> Deactivate(Guid id) => Ok(await _accountService.DeactivateAsync(id));
 
-    [HttpPost("{id}/credit")]
-    public async Task<IActionResult> Credit(Guid id, [FromBody] CreditAccountRequest request)
+    [HttpPost("transactions")]
+    public async Task<IActionResult> Execute([FromBody] TransactionRequest request)
     {
-        var (account, operation) = await _accountService.CreditAsync(id, request);
-        var response = TransactionResponse.From(account, operation);
-
-        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
-    }
-
-    [HttpPost("{id}/debit")]
-    public async Task<IActionResult> Debit(Guid id, [FromBody] DebitAccountRequest request)
-    {
-        var (account, operation) = await _accountService.DebitAsync(id, request);
-        var response = TransactionResponse.From(account, operation);
-
-        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
-    }
-
-    [HttpPost("{id}/reserve")]
-    public async Task<IActionResult> Reserve(Guid id, [FromBody] ReserveAccountRequest request)
-    {
-        var (account, operation) = await _accountService.ReserveAsync(id, request);
-        var response = TransactionResponse.From(account, operation);
-
-        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
-    }
-
-    [HttpPost("{id}/capture")]
-    public async Task<IActionResult> Capture(Guid id, [FromBody] CaptureAccountRequest request)
-    {
-        var (account, operation) = await _accountService.CaptureAsync(id, request);
-        var response = TransactionResponse.From(account, operation);
-
-        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
-    }
-
-    [HttpPost("{id}/reversal")]
-    public async Task<IActionResult> Reversal(Guid id, [FromBody] ReversalAccountRequest request)
-    {
-        var (account, operation, otherAccount, otherOperation) = await _accountService.ReversalAsync(id, request);
-
-        if (otherAccount is not null && otherOperation is not null)
+        switch (request.Operation)
         {
-            var pairedResponse = new
-            {
-                Account = TransactionResponse.From(account, operation),
-                PairedAccount = TransactionResponse.From(otherAccount, otherOperation)
-            };
+            case OperationType.Credit:
+                var creditResult = await _accountService.CreditAsync(request.AccountId,
+                    new CreditAccountRequest(
+                        request.Amount,
+                        request.ReferenceId,
+                        request.Currency,
+                        request.Metadata));
+                return Ok(TransactionResponse.From(creditResult.Account, creditResult.Operation));
 
-            var success = operation.Status == OperationStatus.Success && otherOperation.Status == OperationStatus.Success;
-            return success ? Ok(pairedResponse) : BadRequest(pairedResponse);
+            case OperationType.Debit:
+                var debitResult = await _accountService.DebitAsync(request.AccountId,
+                    new DebitAccountRequest(
+                        request.Amount,
+                        request.ReferenceId,
+                        request.Currency,
+                        request.Metadata));
+                return Ok(TransactionResponse.From(debitResult.Account, debitResult.Operation));
+
+            case OperationType.Reserve:
+                var reserveResult = await _accountService.ReserveAsync(request.AccountId,
+                    new ReserveAccountRequest(
+                        request.Amount,
+                        request.ReferenceId,
+                        request.Currency,
+                        request.Metadata));
+                return Ok(TransactionResponse.From(reserveResult.Account, reserveResult.Operation));
+
+            case OperationType.Capture:
+                var captureResult = await _accountService.CaptureAsync(request.AccountId,
+                    new CaptureAccountRequest(
+                        request.ReserveOperationId!.Value,
+                        request.ReferenceId,
+                        request.Currency,
+                        request.Metadata));
+                return Ok(TransactionResponse.From(captureResult.Account, captureResult.Operation));
+
+            case OperationType.Reversal:
+                var reversalResult = await _accountService.ReversalAsync(request.AccountId,
+                    new ReversalAccountRequest(
+                        request.OriginalOperationId!.Value,
+                        request.ReferenceId,
+                        request.Currency,
+                        request.Metadata));
+                return Ok(TransactionResponse.From(reversalResult.Account, reversalResult.Operation));
+
+            case OperationType.Transfer:
+                var transferResult = await _accountService.TransferAsync(
+                    new TransferAccountRequest(
+                        request.AccountId,
+                        request.DestinationAccountId!.Value,
+                        request.Amount,
+                        request.ReferenceId,
+                        request.Currency,
+                        request.Metadata));
+                return Ok(TransactionResponse.From(transferResult.Account, transferResult.Operation));
+
+            default:
+                throw new ArgumentException($"Unsupported operation: {request.Operation}");
         }
-
-        var response = TransactionResponse.From(account, operation);
-        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
-    }
-
-    [HttpPost("transfer")]
-    public async Task<IActionResult> Transfer([FromBody] TransferAccountRequest request)
-    {
-        var (source, sourceOp, destination, destinationOp) = await _accountService.TransferAsync(request);
-
-        var response = new
-        {
-            Source = TransactionResponse.From(source, sourceOp),
-            Destination = TransactionResponse.From(destination, destinationOp)
-        };
-
-        var success = sourceOp.Status == OperationStatus.Success && destinationOp.Status == OperationStatus.Success;
-        return success ? Ok(response) : BadRequest(response);
     }
 }

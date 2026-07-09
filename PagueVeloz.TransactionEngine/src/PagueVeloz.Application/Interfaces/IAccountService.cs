@@ -14,7 +14,7 @@ namespace PagueVeloz.Application.Interfaces
         Task<(Account Account, AccountOperation Operation)> DebitAsync(Guid accountId, DebitAccountRequest request);
         Task<(Account Account, AccountOperation Operation)> ReserveAsync(Guid accountId, ReserveAccountRequest request);
         Task<(Account Account, AccountOperation Operation)> CaptureAsync(Guid accountId, CaptureAccountRequest request);
-        Task<(Account Account, AccountOperation Operation, Account? OtherAccount, AccountOperation? OtherOperation)> ReversalAsync(Guid accountId, ReversalAccountRequest request);
-        Task<(Account Source, AccountOperation SourceOperation, Account Destination, AccountOperation DestinationOperation)> TransferAsync(TransferAccountRequest request);
+        Task<(Account Account, AccountOperation Operation)> ReversalAsync(Guid accountId, ReversalAccountRequest request);
+        Task<(Account Account, AccountOperation Operation)> TransferAsync(TransferAccountRequest request);
     }
 }
