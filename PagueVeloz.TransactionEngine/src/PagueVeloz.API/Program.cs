@@ -1,3 +1,4 @@
+using PagueVeloz.API.Middlewares;
 using PagueVeloz.Application;
 using PagueVeloz.Infrastructure;
 using System.Text.Json.Serialization;
@@ -15,6 +16,7 @@ builder.Services.AddApplication();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {

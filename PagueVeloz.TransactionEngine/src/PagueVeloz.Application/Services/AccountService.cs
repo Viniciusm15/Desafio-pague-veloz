@@ -2,6 +2,7 @@
 using PagueVeloz.Application.Exceptions;
 using PagueVeloz.Application.Interfaces;
 using PagueVeloz.Domain.Entities;
+using PagueVeloz.Domain.Enums;
 using PagueVeloz.Domain.Interfaces;
 
 namespace PagueVeloz.Application.Services;
@@ -68,72 +69,75 @@ public class AccountService : IAccountService
         return account;
     }
 
-    public async Task<Account> CreditAsync(Guid accountId, CreditAccountRequest request)
+    public async Task<(Account Account, AccountOperation Operation)> CreditAsync(Guid accountId, CreditAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Credit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
+        var operation = account.Credit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
 
-        return account;
+        return (account, operation);
     }
 
-    public async Task<Account> DebitAsync(Guid accountId, DebitAccountRequest request)
+    public async Task<(Account Account, AccountOperation Operation)> DebitAsync(Guid accountId, DebitAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Debit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
+        var operation = account.Debit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
 
-        return account;
+        return (account, operation);
     }
 
-    public async Task<Account> ReserveAsync(Guid accountId, ReserveAccountRequest request)
+    public async Task<(Account Account, AccountOperation Operation)> ReserveAsync(Guid accountId, ReserveAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Reserve(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
+        var operation = account.Reserve(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
 
-        return account;
+        return (account, operation);
     }
 
-    public async Task<Account> CaptureAsync(Guid accountId, CaptureAccountRequest request)
+    public async Task<(Account Account, AccountOperation Operation)> CaptureAsync(Guid accountId, CaptureAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
 
-        account.Capture(request.ReserveOperationId, request.ReferenceId, request.Currency, request.Metadata);
+        var operation = account.Capture(request.ReserveOperationId, request.ReferenceId, request.Currency, request.Metadata);
         await _unitOfWork.SaveChangesAsync();
 
-        return account;
+        return (account, operation);
     }
 
-    public async Task<Account> ReversalAsync(Guid accountId, ReversalAccountRequest request)
+    public async Task<(Account Account, AccountOperation Operation, Account? OtherAccount, AccountOperation? OtherOperation)> ReversalAsync(Guid accountId, ReversalAccountRequest request)
     {
         var account = await GetAccountByIdAsync(accountId);
-        var originalOperation = account.Operations.FirstOrDefault(o => o.Id == request.OriginalOperationId)
-            ?? throw new InvalidOperationException($"Operation {request.OriginalOperationId} not found.");
 
-        var allOperations = await _accountRepository.GetOperationsByReferenceIdAsync(originalOperation.ReferenceId);
-        var otherOperation = allOperations.FirstOrDefault(o => o.AccountId != accountId);
+        var originalOperation = account.Operations.FirstOrDefault(o => o.Id == request.OriginalOperationId);
+        Account? otherAccount = null;
+        AccountOperation? pairedOperation = null;
 
-        if (otherOperation is not null)
+        if (originalOperation is not null)
         {
-            var otherAccount = await GetAccountByIdAsync(otherOperation.AccountId);
+            var allOperations = await _accountRepository.GetOperationsByReferenceIdAsync(originalOperation.ReferenceId);
+            pairedOperation = allOperations.FirstOrDefault(o => o.AccountId != accountId);
 
-            account.Reversal(request.OriginalOperationId, request.ReferenceId, request.Currency, request.Metadata);
-            otherAccount.Reversal(otherOperation.Id, request.ReferenceId, request.Currency, request.Metadata);
-            await _unitOfWork.SaveChangesAsync();
-
-            return account;
+            if (pairedOperation is not null)
+                otherAccount = await GetAccountByIdAsync(pairedOperation.AccountId);
         }
 
-        account.Reversal(request.OriginalOperationId, request.ReferenceId, request.Currency, request.Metadata);
+        var operation = account.Reversal(request.OriginalOperationId, request.ReferenceId, request.Currency, request.Metadata);
+
+        AccountOperation? otherOperation = null;
+        if (otherAccount is not null && pairedOperation is not null && operation.Status == OperationStatus.Success)
+            otherOperation = otherAccount.Reversal(pairedOperation.Id, request.ReferenceId, request.Currency, request.Metadata);
+
         await _unitOfWork.SaveChangesAsync();
-        return account;
+
+        return (account, operation, otherAccount, otherOperation);
     }
 
-    public async Task<(Account Source, Account Destination)> TransferAsync(TransferAccountRequest request)
+    public async Task<(Account Source, AccountOperation SourceOperation, Account Destination, AccountOperation DestinationOperation)> TransferAsync(TransferAccountRequest request)
     {
         if (request.SourceAccountId == request.DestinationAccountId)
             throw new ArgumentException("Source and destination accounts must be different.");
@@ -141,12 +145,23 @@ public class AccountService : IAccountService
         var source = await GetAccountByIdAsync(request.SourceAccountId);
         var destination = await GetAccountByIdAsync(request.DestinationAccountId);
 
-        source.Debit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
-        destination.Credit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
+        var sourceOperation = source.Debit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
+
+        AccountOperation destinationOperation;
+        if (sourceOperation.Status == OperationStatus.Success)
+        {
+            destinationOperation = destination.Credit(request.Amount, request.ReferenceId, request.Currency, request.Metadata);
+        }
+        else
+        {
+            destinationOperation = AccountOperation.Failed(
+                destination.Id, OperationType.Credit, request.Amount, request.Currency,
+                request.ReferenceId, "Transfer aborted: source debit failed.", request.Metadata);
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
-        return (source, destination);
+        return (source, sourceOperation, destination, destinationOperation);
     }
 
     #region Private Methods

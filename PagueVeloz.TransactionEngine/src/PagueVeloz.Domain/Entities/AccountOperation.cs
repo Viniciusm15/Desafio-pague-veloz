@@ -13,6 +13,7 @@ public class AccountOperation
     public string? Metadata { get; private set; }
     public OperationStatus Status { get; private set; }
     public string ReferenceId { get; private set; } = string.Empty;
+    public string? FailureReason { get; private set; }
     public DateTime OccurredAt { get; private set; }
 
     private AccountOperation() { }
@@ -24,6 +25,7 @@ public class AccountOperation
     string currency,
     OperationStatus status,
     string referenceId,
+    string? failureReason,
     Dictionary<string, object>? metadata = null)
     {
         Id = Guid.NewGuid();
@@ -33,6 +35,7 @@ public class AccountOperation
         Currency = currency;
         Status = status;
         ReferenceId = referenceId;
+        FailureReason = failureReason;
         OccurredAt = DateTime.UtcNow;
         Metadata = metadata is not null ? JsonSerializer.Serialize(metadata) : null;
     }
@@ -44,7 +47,7 @@ public class AccountOperation
         string currency,
         string referenceId,
         Dictionary<string, object>? metadata = null)
-        => new(accountId, type, amount, currency, OperationStatus.Success, referenceId, metadata);
+        => new(accountId, type, amount, currency, OperationStatus.Success, referenceId, null, metadata);
 
     public static AccountOperation Failed(
         Guid accountId,
@@ -52,6 +55,7 @@ public class AccountOperation
         decimal amount,
         string currency,
         string referenceId,
+        string failureReason,
         Dictionary<string, object>? metadata = null)
-        => new(accountId, type, amount, currency, OperationStatus.Failed, referenceId, metadata);
+        => new(accountId, type, amount, currency, OperationStatus.Failed, referenceId, failureReason, metadata);
 }

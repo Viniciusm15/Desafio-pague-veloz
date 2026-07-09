@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PagueVeloz.Application.DTOs.Requests.Account;
-using PagueVeloz.Application.Exceptions;
+using PagueVeloz.Application.DTOs.Responses;
 using PagueVeloz.Application.Interfaces;
+using PagueVeloz.Domain.Enums;
 
 namespace PagueVeloz.API.Controllers;
 
@@ -19,218 +20,95 @@ public class AccountController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateAccountRequest request)
     {
-        try
-        {
-            var account = await _accountService.OpenAccountAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var account = await _accountService.OpenAccountAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
         var account = await _accountService.GetByIdAsync(id);
-
-        if (account is null)
-            return NotFound();
-
-        return Ok(account);
+        return account is null ? NotFound() : Ok(account);
     }
 
     [HttpPost("{id}/block")]
-    public async Task<IActionResult> Block(Guid id)
-    {
-        var account = await _accountService.BlockAsync(id);
-        return Ok(account);
-    }
+    public async Task<IActionResult> Block(Guid id) => Ok(await _accountService.BlockAsync(id));
 
     [HttpPost("{id}/reactivate")]
-    public async Task<IActionResult> Reactivate(Guid id)
-    {
-        var account = await _accountService.ReactivateAsync(id);
-        return Ok(account);
-    }
+    public async Task<IActionResult> Reactivate(Guid id) => Ok(await _accountService.ReactivateAsync(id));
 
     [HttpPost("{id}/deactivate")]
-    public async Task<IActionResult> Deactivate(Guid id)
-    {
-        var account = await _accountService.DeactivateAsync(id);
-        return Ok(account);
-    }
+    public async Task<IActionResult> Deactivate(Guid id) => Ok(await _accountService.DeactivateAsync(id));
 
     [HttpPost("{id}/credit")]
     public async Task<IActionResult> Credit(Guid id, [FromBody] CreditAccountRequest request)
     {
-        try
-        {
-            var account = await _accountService.CreditAsync(id, request);
+        var (account, operation) = await _accountService.CreditAsync(id, request);
+        var response = TransactionResponse.From(account, operation);
 
-            return Ok(new
-            {
-                account.Id,
-                account.AvailableBalance,
-                Message = $"Credit of {request.Amount:C} completed successfully."
-            });
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("{id}/debit")]
     public async Task<IActionResult> Debit(Guid id, [FromBody] DebitAccountRequest request)
     {
-        try
-        {
-            var account = await _accountService.DebitAsync(id, request);
+        var (account, operation) = await _accountService.DebitAsync(id, request);
+        var response = TransactionResponse.From(account, operation);
 
-            return Ok(new
-            {
-                account.Id,
-                account.AvailableBalance,
-                Message = $"Debit of {request.Amount:C} completed successfully."
-            });
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("{id}/reserve")]
     public async Task<IActionResult> Reserve(Guid id, [FromBody] ReserveAccountRequest request)
     {
-        try
-        {
-            var account = await _accountService.ReserveAsync(id, request);
+        var (account, operation) = await _accountService.ReserveAsync(id, request);
+        var response = TransactionResponse.From(account, operation);
 
-            return Ok(new
-            {
-                account.Id,
-                account.CustomerId,
-                account.AvailableBalance,
-                account.ReservedBalance,
-                Message = $"Reserve of {request.Amount:C} completed successfully.",
-                Operations = account.Operations.Select(o => new
-                {
-                    o.Id,
-                    o.AccountId,
-                    o.Type,
-                    o.Amount,
-                    o.OccurredAt
-                })
-            });
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("{id}/capture")]
     public async Task<IActionResult> Capture(Guid id, [FromBody] CaptureAccountRequest request)
     {
-        try
-        {
-            var account = await _accountService.CaptureAsync(id, request);
+        var (account, operation) = await _accountService.CaptureAsync(id, request);
+        var response = TransactionResponse.From(account, operation);
 
-            return Ok(new
-            {
-                account.Id,
-                account.AvailableBalance,
-                account.ReservedBalance,
-                Message = "Capture completed successfully."
-            });
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("{id}/reversal")]
     public async Task<IActionResult> Reversal(Guid id, [FromBody] ReversalAccountRequest request)
     {
-        try
-        {
-            var account = await _accountService.ReversalAsync(id, request);
+        var (account, operation, otherAccount, otherOperation) = await _accountService.ReversalAsync(id, request);
 
-            return Ok(new
+        if (otherAccount is not null && otherOperation is not null)
+        {
+            var pairedResponse = new
             {
-                account.Id,
-                account.AvailableBalance,
-                account.ReservedBalance,
-                Message = "Reversal completed successfully."
-            });
+                Account = TransactionResponse.From(account, operation),
+                PairedAccount = TransactionResponse.From(otherAccount, otherOperation)
+            };
+
+            var success = operation.Status == OperationStatus.Success && otherOperation.Status == OperationStatus.Success;
+            return success ? Ok(pairedResponse) : BadRequest(pairedResponse);
         }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+
+        var response = TransactionResponse.From(account, operation);
+        return operation.Status == OperationStatus.Success ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("transfer")]
     public async Task<IActionResult> Transfer([FromBody] TransferAccountRequest request)
     {
-        try
-        {
-            var (source, destination) = await _accountService.TransferAsync(request);
+        var (source, sourceOp, destination, destinationOp) = await _accountService.TransferAsync(request);
 
-            return Ok(new
-            {
-                Source = new { source.Id, source.AvailableBalance },
-                Destination = new { destination.Id, destination.AvailableBalance },
-                Message = $"Transfer of {request.Amount:C} completed successfully."
-            });
-        }
-        catch (NotFoundException ex)
+        var response = new
         {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+            Source = TransactionResponse.From(source, sourceOp),
+            Destination = TransactionResponse.From(destination, destinationOp)
+        };
+
+        var success = sourceOp.Status == OperationStatus.Success && destinationOp.Status == OperationStatus.Success;
+        return success ? Ok(response) : BadRequest(response);
     }
 }

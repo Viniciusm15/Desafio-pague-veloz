@@ -37,6 +37,9 @@ public class AccountOperationConfiguration : IEntityTypeConfiguration<AccountOpe
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(o => o.FailureReason)
+            .HasMaxLength(500);
+
         builder.Property(o => o.OccurredAt)
             .IsRequired();
 
