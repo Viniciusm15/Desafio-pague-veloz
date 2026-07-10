@@ -52,8 +52,8 @@ public class ExceptionHandlingMiddleware
         {
             title,
             status = (int)statusCode,
-            detail = exception.Message,
-            traceId = context.TraceIdentifier
+            detail = exception.Message,   // ← se quiser snake_case: error_message
+            trace_id = context.TraceIdentifier
         };
 
         context.Response.ContentType = "application/problem+json";
@@ -74,7 +74,7 @@ public class ExceptionHandlingMiddleware
             errors = exception.Errors
                 .GroupBy(e => ToSnakeCase(e.PropertyName))
                 .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()),
-            traceId = context.TraceIdentifier
+            trace_id = context.TraceIdentifier
         };
 
         context.Response.ContentType = "application/problem+json";

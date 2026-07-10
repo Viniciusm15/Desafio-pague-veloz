@@ -11,7 +11,7 @@ public class Account
     public decimal CreditLimit { get; private set; }
     public AccountStatus Status { get; private set; }
 
-    private readonly List<AccountOperation> _operations = new();
+    private readonly List<AccountOperation> _operations = [];
     public IReadOnlyCollection<AccountOperation> Operations => _operations.AsReadOnly();
 
     private Account(Guid customerId, decimal creditLimit)
@@ -47,7 +47,7 @@ public class Account
             referenceId,
             metadata,
             () => Status != AccountStatus.Active ? InactiveAccountReason() : null,
-            () => amount <= 0 ? "Amount must be greater than zero." : null
+            () => amount <= 0 ? "amount must be greater than zero." : null
         );
 
         if (failure is not null)
@@ -72,8 +72,8 @@ public class Account
             referenceId,
             metadata,
             () => Status != AccountStatus.Active ? InactiveAccountReason() : null,
-            () => amount <= 0 ? "Amount must be greater than zero." : null,
-            () => amount > AvailableBalance + CreditLimit ? "Insufficient funds to complete the debit." : null
+            () => amount <= 0 ? "amount must be greater than zero." : null,
+            () => amount > AvailableBalance + CreditLimit ? "insufficient funds to complete the debit." : null
         );
 
         if (failure is not null)
@@ -98,8 +98,8 @@ public class Account
             referenceId,
             metadata,
             () => Status != AccountStatus.Active ? InactiveAccountReason() : null,
-            () => amount <= 0 ? "Amount must be greater than zero." : null,
-            () => amount > AvailableBalance ? "Insufficient available balance for reservation." : null
+            () => amount <= 0 ? "amount must be greater than zero." : null,
+            () => amount > AvailableBalance ? "insufficient available balance for reservation." : null
         );
 
         if (failure is not null)
@@ -128,13 +128,13 @@ public class Account
             () =>
             {
                 var reservation = _operations.FirstOrDefault(o => o.Id == reserveOperationId);
-                return reservation is null ? $"Reservation {reserveOperationId} not found." : null;
+                return reservation is null ? $"reservation {reserveOperationId} not found." : null;
             },
             () =>
             {
                 var reservation = _operations.FirstOrDefault(o => o.Id == reserveOperationId);
                 if (reservation is null) return null;
-                return reservation.Amount > ReservedBalance ? "Insufficient reserved balance for capture." : null;
+                return reservation.Amount > ReservedBalance ? "insufficient reserved balance for capture." : null;
             }
         );
 
@@ -164,7 +164,7 @@ public class Account
             () =>
             {
                 var op = _operations.FirstOrDefault(o => o.Id == originalOperationId);
-                return op is null ? $"Operation {originalOperationId} not found." : null;
+                return op is null ? $"operation {originalOperationId} not found." : null;
             }
         );
 
@@ -191,7 +191,7 @@ public class Account
                 break;
             default:
                 return Fail(OperationType.Reversal, amount, currency, referenceId,
-                    $"Operations of type '{originalOperation.Type}' cannot be reversed.", metadata);
+                    $"operations of type '{originalOperation.Type}' cannot be reversed.", metadata);
         }
 
         var operation = AccountOperation.Succeeded(Id, OperationType.Reversal, amount, currency, referenceId, metadata);
@@ -235,7 +235,7 @@ public class Account
     }
 
     private string InactiveAccountReason()
-        => $"Account {Id} is {Status}. Only active accounts can perform operations.";
+        => $"account {Id} is {Status}. Only active accounts can perform operations.";
 
     private bool TryGetExistingOperation(string referenceId, out AccountOperation? operation)
     {
