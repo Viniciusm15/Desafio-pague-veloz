@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PagueVeloz.Application.DTOs.Requests.Customer;
-using PagueVeloz.Application.Interfaces;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using PagueVeloz.Application.Commands.Customers;
+using PagueVeloz.Application.Queries.Customers;
 
 namespace PagueVeloz.API.Controllers;
 
@@ -8,24 +9,24 @@ namespace PagueVeloz.API.Controllers;
 [Route("api/[controller]")]
 public class CustomerController : ControllerBase
 {
-    private readonly ICustomerService _customerService;
+    private readonly IMediator _mediator;
 
-    public CustomerController(ICustomerService customerService)
+    public CustomerController(IMediator mediator)
     {
-        _customerService = customerService;
+        _mediator = mediator;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateCustomerRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateCustomerCommand command, CancellationToken cancellationToken)
     {
-        var customer = await _customerService.CreateAsync(request);
+        var customer = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = customer.Id }, customer);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var customer = await _customerService.GetByIdAsync(id);
+        var customer = await _mediator.Send(new GetCustomerQuery(id), cancellationToken);
         if (customer is null) return NotFound();
         return Ok(customer);
     }

@@ -16,11 +16,10 @@ public class HealthController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
-        var report = await _healthCheckService.CheckHealthAsync();
+        var report = await _healthCheckService.CheckHealthAsync(cancellationToken);
         var response = await HealthCheckResponseWriter.BuildResponse(HttpContext, report);
-
         return Ok(response);
     }
 }

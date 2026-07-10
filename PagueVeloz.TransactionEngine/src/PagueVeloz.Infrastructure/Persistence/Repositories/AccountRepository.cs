@@ -14,23 +14,22 @@ public class AccountRepository : IAccountRepository
         _context = context;
     }
 
-    public async Task<Account?> GetByIdAsync(Guid accountId)
+    public async Task<Account?> GetByIdAsync(Guid accountId, CancellationToken cancellationToken = default)
     {
         return await _context.Accounts
             .Include(a => a.Operations.OrderByDescending(o => o.OccurredAt))
-            .FirstOrDefaultAsync(a => a.Id == accountId);
+            .FirstOrDefaultAsync(a => a.Id == accountId, cancellationToken);
     }
 
-    public async Task AddAsync(Account account)
+    public async Task AddAsync(Account account, CancellationToken cancellationToken = default)
     {
-        await _context.Accounts.AddAsync(account);
-        await _context.SaveChangesAsync();
+        await _context.Accounts.AddAsync(account, cancellationToken);
     }
 
-    public async Task<IEnumerable<AccountOperation>> GetOperationsByReferenceIdAsync(string referenceId)
+    public async Task<IEnumerable<AccountOperation>> GetOperationsByReferenceIdAsync(string referenceId, CancellationToken cancellationToken = default)
     {
         return await _context.AccountOperations
             .Where(o => o.ReferenceId == referenceId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 }

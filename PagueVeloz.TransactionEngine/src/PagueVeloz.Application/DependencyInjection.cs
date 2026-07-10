@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using PagueVeloz.Application.Interfaces;
-using PagueVeloz.Application.Services;
-using PagueVeloz.Application.Validators.Account;
+using PagueVeloz.Application.Behaviors;
 
 namespace PagueVeloz.Application;
 
@@ -10,9 +9,13 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IAccountService, AccountService>();
-        services.AddScoped<ICustomerService, CustomerService>();
-        services.AddValidatorsFromAssemblyContaining<TransactionRequestValidator>();
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        });
+
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         return services;
     }

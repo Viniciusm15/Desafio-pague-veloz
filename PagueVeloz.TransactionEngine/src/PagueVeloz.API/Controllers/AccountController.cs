@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PagueVeloz.Application.DTOs.Requests.Account;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using PagueVeloz.Application.Commands.Accounts;
+using PagueVeloz.Application.Commands.Transactions;
+using PagueVeloz.Application.DTOs.Requests;
 using PagueVeloz.Application.DTOs.Responses;
-using PagueVeloz.Application.Interfaces;
+using PagueVeloz.Application.Queries.Accounts;
 using PagueVeloz.Domain.Enums;
 
 namespace PagueVeloz.API.Controllers;
@@ -10,99 +13,70 @@ namespace PagueVeloz.API.Controllers;
 [Route("api/[controller]")]
 public class AccountController : ControllerBase
 {
-    private readonly IAccountService _accountService;
+    private readonly IMediator _mediator;
 
-    public AccountController(IAccountService accountService)
+    public AccountController(IMediator mediator)
     {
-        _accountService = accountService;
+        _mediator = mediator;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateAccountRequest request)
+    public async Task<IActionResult> Create([FromBody] OpenAccountCommand command, CancellationToken cancellationToken)
     {
-        var account = await _accountService.OpenAccountAsync(request);
+        var account = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var account = await _accountService.GetByIdAsync(id);
-        return account is null ? NotFound() : Ok(account);
+        var account = await _mediator.Send(new GetAccountQuery(id), cancellationToken);
+        if (account is null) return NotFound();
+        return Ok(account);
     }
 
     [HttpPost("{id}/block")]
-    public async Task<IActionResult> Block(Guid id) => Ok(await _accountService.BlockAsync(id));
+    public async Task<IActionResult> Block(Guid id, CancellationToken cancellationToken)
+    {
+        var account = await _mediator.Send(new BlockAccountCommand(id), cancellationToken);
+        return Ok(account);
+    }
 
     [HttpPost("{id}/reactivate")]
-    public async Task<IActionResult> Reactivate(Guid id) => Ok(await _accountService.ReactivateAsync(id));
+    public async Task<IActionResult> Reactivate(Guid id, CancellationToken cancellationToken)
+    {
+        var account = await _mediator.Send(new ReactivateAccountCommand(id), cancellationToken);
+        return Ok(account);
+    }
 
     [HttpPost("{id}/deactivate")]
-    public async Task<IActionResult> Deactivate(Guid id) => Ok(await _accountService.DeactivateAsync(id));
+    public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken)
+    {
+        var account = await _mediator.Send(new DeactivateAccountCommand(id), cancellationToken);
+        return Ok(account);
+    }
 
     [HttpPost("transactions")]
-    public async Task<IActionResult> Execute([FromBody] TransactionRequest request)
+    public async Task<IActionResult> Execute([FromBody] TransactionRequest request, CancellationToken cancellationToken)
     {
-        switch (request.Operation)
+        IRequest<TransactionResponse> command = request.Operation switch
         {
-            case OperationType.Credit:
-                var creditResult = await _accountService.CreditAsync(request.AccountId,
-                    new CreditAccountRequest(
-                        request.Amount,
-                        request.ReferenceId,
-                        request.Currency,
-                        request.Metadata));
-                return Ok(TransactionResponse.From(creditResult.Account, creditResult.Operation));
+            OperationType.Credit =>
+                new CreditCommand(request.AccountId, request.Amount, request.ReferenceId, request.Currency, request.Metadata),
+            OperationType.Debit =>
+                new DebitCommand(request.AccountId, request.Amount, request.ReferenceId, request.Currency, request.Metadata),
+            OperationType.Reserve =>
+                new ReserveCommand(request.AccountId, request.Amount, request.ReferenceId, request.Currency, request.Metadata),
+            OperationType.Capture =>
+                new CaptureCommand(request.AccountId, request.ReserveOperationId!.Value, request.ReferenceId, request.Currency, request.Metadata),
+            OperationType.Reversal =>
+                new ReversalCommand(request.AccountId, request.OriginalOperationId!.Value, request.ReferenceId, request.Currency, request.Metadata),
+            OperationType.Transfer =>
+                new TransferCommand(request.AccountId, request.DestinationAccountId!.Value, request.Amount, request.ReferenceId, request.Currency, request.Metadata),
+            _ => throw new ArgumentException($"Unsupported operation: {request.Operation}")
+        };
 
-            case OperationType.Debit:
-                var debitResult = await _accountService.DebitAsync(request.AccountId,
-                    new DebitAccountRequest(
-                        request.Amount,
-                        request.ReferenceId,
-                        request.Currency,
-                        request.Metadata));
-                return Ok(TransactionResponse.From(debitResult.Account, debitResult.Operation));
-
-            case OperationType.Reserve:
-                var reserveResult = await _accountService.ReserveAsync(request.AccountId,
-                    new ReserveAccountRequest(
-                        request.Amount,
-                        request.ReferenceId,
-                        request.Currency,
-                        request.Metadata));
-                return Ok(TransactionResponse.From(reserveResult.Account, reserveResult.Operation));
-
-            case OperationType.Capture:
-                var captureResult = await _accountService.CaptureAsync(request.AccountId,
-                    new CaptureAccountRequest(
-                        request.ReserveOperationId!.Value,
-                        request.ReferenceId,
-                        request.Currency,
-                        request.Metadata));
-                return Ok(TransactionResponse.From(captureResult.Account, captureResult.Operation));
-
-            case OperationType.Reversal:
-                var reversalResult = await _accountService.ReversalAsync(request.AccountId,
-                    new ReversalAccountRequest(
-                        request.OriginalOperationId!.Value,
-                        request.ReferenceId,
-                        request.Currency,
-                        request.Metadata));
-                return Ok(TransactionResponse.From(reversalResult.Account, reversalResult.Operation));
-
-            case OperationType.Transfer:
-                var transferResult = await _accountService.TransferAsync(
-                    new TransferAccountRequest(
-                        request.AccountId,
-                        request.DestinationAccountId!.Value,
-                        request.Amount,
-                        request.ReferenceId,
-                        request.Currency,
-                        request.Metadata));
-                return Ok(TransactionResponse.From(transferResult.Account, transferResult.Operation));
-
-            default:
-                throw new ArgumentException($"Unsupported operation: {request.Operation}");
-        }
+        var response = await _mediator.Send(command, cancellationToken);
+        return Ok(response);
     }
 }
