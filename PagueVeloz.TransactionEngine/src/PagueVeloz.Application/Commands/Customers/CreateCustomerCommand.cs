@@ -1,6 +1,6 @@
 using MediatR;
-using PagueVeloz.Domain.Entities;
+using PagueVeloz.Application.DTOs.Customers.Responses;
 
 namespace PagueVeloz.Application.Commands.Customers;
 
-public record CreateCustomerCommand(string Name, string Document) : IRequest<Customer>;
+public record CreateCustomerCommand(string Name, string Document) : IRequest<CustomerResponse>;

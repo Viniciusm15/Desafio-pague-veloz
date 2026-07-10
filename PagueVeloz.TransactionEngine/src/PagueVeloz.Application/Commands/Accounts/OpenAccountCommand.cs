@@ -1,6 +1,6 @@
 using MediatR;
-using PagueVeloz.Domain.Entities;
+using PagueVeloz.Application.DTOs.Accounts.Responses;
 
 namespace PagueVeloz.Application.Commands.Accounts;
 
-public record OpenAccountCommand(Guid CustomerId, decimal CreditLimit = 0m) : IRequest<Account>;
+public record OpenAccountCommand(Guid CustomerId, decimal CreditLimit = 0m) : IRequest<AccountResponse>;

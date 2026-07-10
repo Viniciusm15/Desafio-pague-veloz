@@ -1,6 +1,6 @@
 ﻿using PagueVeloz.Domain.Enums;
 
-namespace PagueVeloz.Application.DTOs.Requests;
+namespace PagueVeloz.Application.DTOs.Transactions.Requests;
 
 public record TransactionRequest(
     OperationType Operation,

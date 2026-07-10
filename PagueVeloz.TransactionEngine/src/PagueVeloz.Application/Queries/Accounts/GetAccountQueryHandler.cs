@@ -1,10 +1,10 @@
 using MediatR;
-using PagueVeloz.Domain.Entities;
+using PagueVeloz.Application.DTOs.Accounts.Responses;
 using PagueVeloz.Domain.Interfaces;
 
 namespace PagueVeloz.Application.Queries.Accounts;
 
-public class GetAccountQueryHandler : IRequestHandler<GetAccountQuery, Account?>
+public class GetAccountQueryHandler : IRequestHandler<GetAccountQuery, AccountResponse?>
 {
     private readonly IAccountRepository _accountRepository;
 
@@ -13,8 +13,9 @@ public class GetAccountQueryHandler : IRequestHandler<GetAccountQuery, Account?>
         _accountRepository = accountRepository;
     }
 
-    public async Task<Account?> Handle(GetAccountQuery request, CancellationToken cancellationToken)
+    public async Task<AccountResponse?> Handle(GetAccountQuery request, CancellationToken cancellationToken)
     {
-        return await _accountRepository.GetByIdAsync(request.AccountId, cancellationToken);
+        var account = await _accountRepository.GetByIdAsync(request.AccountId, cancellationToken);
+        return account is null ? null : AccountResponse.From(account);
     }
 }

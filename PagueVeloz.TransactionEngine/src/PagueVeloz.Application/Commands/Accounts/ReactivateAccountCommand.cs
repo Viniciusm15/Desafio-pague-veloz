@@ -1,6 +1,6 @@
 using MediatR;
-using PagueVeloz.Domain.Entities;
+using PagueVeloz.Application.DTOs.Accounts.Responses;
 
 namespace PagueVeloz.Application.Commands.Accounts;
 
-public record ReactivateAccountCommand(Guid AccountId) : IRequest<Account>;
+public record ReactivateAccountCommand(Guid AccountId) : IRequest<AccountResponse>;

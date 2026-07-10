@@ -1,6 +1,6 @@
 using MediatR;
-using PagueVeloz.Domain.Entities;
+using PagueVeloz.Application.DTOs.Accounts.Responses;
 
 namespace PagueVeloz.Application.Queries.Accounts;
 
-public record GetAccountQuery(Guid AccountId) : IRequest<Account?>;
+public record GetAccountQuery(Guid AccountId) : IRequest<AccountResponse?>;

@@ -1,5 +1,5 @@
 using MediatR;
-using PagueVeloz.Application.DTOs.Responses;
+using PagueVeloz.Application.DTOs.Transactions.Responses;
 
 namespace PagueVeloz.Application.Commands.Transactions;
 

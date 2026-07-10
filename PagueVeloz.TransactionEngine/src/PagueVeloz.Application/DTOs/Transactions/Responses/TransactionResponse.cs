@@ -1,7 +1,7 @@
 ﻿using PagueVeloz.Domain.Entities;
 using PagueVeloz.Domain.Enums;
 
-namespace PagueVeloz.Application.DTOs.Responses;
+namespace PagueVeloz.Application.DTOs.Transactions.Responses;
 
 public record TransactionResponse(
     Guid TransactionId,

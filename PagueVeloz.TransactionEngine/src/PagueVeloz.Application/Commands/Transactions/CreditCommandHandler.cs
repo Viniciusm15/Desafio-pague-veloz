@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using PagueVeloz.Application.DTOs.Responses;
+using PagueVeloz.Application.DTOs.Transactions.Responses;
 using PagueVeloz.Application.Exceptions;
 using PagueVeloz.Domain.Entities;
 using PagueVeloz.Domain.Interfaces;

@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PagueVeloz.Application.Commands.Accounts;
 using PagueVeloz.Application.Commands.Transactions;
-using PagueVeloz.Application.DTOs.Requests;
-using PagueVeloz.Application.DTOs.Responses;
+using PagueVeloz.Application.DTOs.Transactions.Requests;
+using PagueVeloz.Application.DTOs.Transactions.Responses;
 using PagueVeloz.Application.Queries.Accounts;
 using PagueVeloz.Domain.Enums;
 

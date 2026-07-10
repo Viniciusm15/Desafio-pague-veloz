@@ -1,11 +1,12 @@
 using MediatR;
+using PagueVeloz.Application.DTOs.Accounts.Responses;
 using PagueVeloz.Application.Exceptions;
 using PagueVeloz.Domain.Entities;
 using PagueVeloz.Domain.Interfaces;
 
 namespace PagueVeloz.Application.Commands.Accounts;
 
-public class ReactivateAccountCommandHandler : IRequestHandler<ReactivateAccountCommand, Account>
+public class ReactivateAccountCommandHandler : IRequestHandler<ReactivateAccountCommand, AccountResponse>
 {
     private readonly IAccountRepository _accountRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +17,7 @@ public class ReactivateAccountCommandHandler : IRequestHandler<ReactivateAccount
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Account> Handle(ReactivateAccountCommand request, CancellationToken cancellationToken)
+    public async Task<AccountResponse> Handle(ReactivateAccountCommand request, CancellationToken cancellationToken)
     {
         var account = await _accountRepository.GetByIdAsync(request.AccountId, cancellationToken)
             ?? throw new NotFoundException(nameof(Account), request.AccountId);
@@ -24,6 +25,6 @@ public class ReactivateAccountCommandHandler : IRequestHandler<ReactivateAccount
         account.Activate();
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return account;
+        return AccountResponse.From(account);
     }
 }

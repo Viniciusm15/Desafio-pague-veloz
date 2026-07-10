@@ -1,10 +1,10 @@
 using MediatR;
-using PagueVeloz.Domain.Entities;
+using PagueVeloz.Application.DTOs.Customers.Responses;
 using PagueVeloz.Domain.Interfaces;
 
 namespace PagueVeloz.Application.Queries.Customers;
 
-public class GetCustomerQueryHandler : IRequestHandler<GetCustomerQuery, Customer?>
+public class GetCustomerQueryHandler : IRequestHandler<GetCustomerQuery, CustomerResponse?>
 {
     private readonly ICustomerRepository _customerRepository;
 
@@ -13,8 +13,9 @@ public class GetCustomerQueryHandler : IRequestHandler<GetCustomerQuery, Custome
         _customerRepository = customerRepository;
     }
 
-    public async Task<Customer?> Handle(GetCustomerQuery request, CancellationToken cancellationToken)
+    public async Task<CustomerResponse?> Handle(GetCustomerQuery request, CancellationToken cancellationToken)
     {
-        return await _customerRepository.GetByIdAsync(request.CustomerId, cancellationToken);
+        var customer = await _customerRepository.GetByIdAsync(request.CustomerId, cancellationToken);
+        return customer is null ? null : CustomerResponse.From(customer);
     }
 }
