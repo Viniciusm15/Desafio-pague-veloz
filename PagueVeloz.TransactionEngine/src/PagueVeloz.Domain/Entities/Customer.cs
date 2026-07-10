@@ -21,6 +21,10 @@ public class Customer
         if (string.IsNullOrWhiteSpace(document))
             throw new ArgumentException("Customer document is required.");
 
-        return new Customer(name, document);
+        var digits = new string(document.Where(char.IsDigit).ToArray());
+        if (digits.Length != 11 && digits.Length != 14)
+            throw new ArgumentException("Customer document must be a valid CPF or CNPJ.");
+
+        return new Customer(name, digits);
     }
 }

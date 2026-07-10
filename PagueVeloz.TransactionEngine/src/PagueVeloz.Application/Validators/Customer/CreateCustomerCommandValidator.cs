@@ -14,5 +14,15 @@ public class CreateCustomerCommandValidator : AbstractValidator<CreateCustomerCo
         RuleFor(x => x.Document)
             .NotEmpty()
             .WithMessage("document is required.");
+
+        RuleFor(x => x.Document)
+            .IsValidCPF()
+            .When(x => x.Document.Replace(".", "").Replace("-", "").Replace("/", "").Length <= 11)
+            .WithMessage("document must be a valid CPF.");
+
+        RuleFor(x => x.Document)
+            .IsValidCNPJ()
+            .When(x => x.Document.Replace(".", "").Replace("-", "").Replace("/", "").Length > 11)
+            .WithMessage("document must be a valid CNPJ.");
     }
 }
