@@ -52,7 +52,7 @@ public class ExceptionHandlingMiddleware
         {
             title,
             status = (int)statusCode,
-            detail = exception.Message,   // ← se quiser snake_case: error_message
+            detail = exception.Message,
             trace_id = context.TraceIdentifier
         };
 
