@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PagueVeloz.Domain.Interfaces;
+using PagueVeloz.Infrastructure.Observability.HealthChecks;
 using PagueVeloz.Infrastructure.Persistence;
 using PagueVeloz.Infrastructure.Persistence.Context;
 using PagueVeloz.Infrastructure.Persistence.Interceptors;
@@ -28,10 +29,8 @@ public static class DependencyInjection
         services.AddScoped<ICustomerRepository, CustomerRepository>();
 
         services.AddHealthChecks()
-            .AddNpgSql(
-                connectionString!,
-                name: "postgresql",
-                tags: ["db", "ready"]);
+            .AddNpgSql(connectionString!, name: "postgresql", tags: ["db", "ready"])
+            .AddCheck<WorkerHealthCheck>(name: "worker", tags: ["worker", "ready"]);
 
         return services;
     }

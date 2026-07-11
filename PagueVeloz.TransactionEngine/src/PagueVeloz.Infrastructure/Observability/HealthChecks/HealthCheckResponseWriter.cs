@@ -1,16 +1,17 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 
-namespace PagueVeloz.API.HealthChecks;
+namespace PagueVeloz.Infrastructure.Observability.HealthChecks;
 
 public static class HealthCheckResponseWriter
 {
-    public static async Task<object> BuildResponse(HttpContext context, HealthReport report)
+    public static object BuildResponse(IHostEnvironment environment, HealthReport report)
     {
-        return await Task.FromResult(new
+        return new
         {
             status = report.Status.ToString(),
             timestamp = DateTime.UtcNow,
-            environment = context.RequestServices.GetRequiredService<IHostEnvironment>().EnvironmentName,
+            environment = environment.EnvironmentName,
             totalDurationMs = report.TotalDuration.TotalMilliseconds,
             checks = report.Entries.Select(e => new
             {
@@ -20,6 +21,6 @@ public static class HealthCheckResponseWriter
                 description = e.Value.Description,
                 error = e.Value.Exception?.Message
             })
-        });
+        };
     }
 }
