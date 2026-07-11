@@ -22,8 +22,6 @@ public class CorrelationIdMiddleware
         context.Items["CorrelationId"] = correlationId;
         context.Response.Headers[HeaderName] = correlationId;
 
-        // Todo log emitido durante essa request (incluindo os do ExceptionHandlingMiddleware
-        // e o log de request/response do Serilog) carrega essa propriedade automaticamente.
         using (LogContext.PushProperty("CorrelationId", correlationId))
         {
             await _next(context);
