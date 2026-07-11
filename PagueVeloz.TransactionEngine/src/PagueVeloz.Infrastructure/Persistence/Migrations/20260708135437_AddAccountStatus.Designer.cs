@@ -9,11 +9,11 @@ using PagueVeloz.Infrastructure.Persistence.Context;
 
 #nullable disable
 
-namespace PagueVeloz.Infrastructure.Migrations
+namespace PagueVeloz.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260708013612_AddCreditLimitToAccount")]
-    partial class AddCreditLimitToAccount
+    [Migration("20260708135437_AddAccountStatus")]
+    partial class AddAccountStatus
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,6 +48,13 @@ namespace PagueVeloz.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasDefaultValue(0m);
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Active");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -69,6 +76,11 @@ namespace PagueVeloz.Infrastructure.Migrations
                     b.Property<DateTime>("OccurredAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ReferenceId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -76,7 +88,8 @@ namespace PagueVeloz.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("AccountId", "ReferenceId")
+                        .IsUnique();
 
                     b.ToTable("AccountOperations", (string)null);
                 });

@@ -2,21 +2,21 @@
 
 #nullable disable
 
-namespace PagueVeloz.Infrastructure.Migrations
+namespace PagueVeloz.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddStatusToAccountOperation : Migration
+    public partial class AddAccountStatus : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
                 name: "Status",
-                table: "AccountOperations",
+                table: "Accounts",
                 type: "character varying(20)",
                 maxLength: 20,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "Active");
         }
 
         /// <inheritdoc />
@@ -24,7 +24,7 @@ namespace PagueVeloz.Infrastructure.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "Status",
-                table: "AccountOperations");
+                table: "Accounts");
         }
     }
 }

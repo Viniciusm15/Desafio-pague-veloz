@@ -9,11 +9,11 @@ using PagueVeloz.Infrastructure.Persistence.Context;
 
 #nullable disable
 
-namespace PagueVeloz.Infrastructure.Migrations
+namespace PagueVeloz.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260709053003_AddFailureReasonToAccountOperation")]
-    partial class AddFailureReasonToAccountOperation
+    [Migration("20260708211614_AddCurrencyAndMetadataToAccountOperation")]
+    partial class AddCurrencyAndMetadataToAccountOperation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -78,10 +78,6 @@ namespace PagueVeloz.Infrastructure.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
 
-                    b.Property<string>("FailureReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<string>("Metadata")
                         .HasColumnType("jsonb");
 
@@ -92,11 +88,6 @@ namespace PagueVeloz.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Type")
                         .IsRequired()

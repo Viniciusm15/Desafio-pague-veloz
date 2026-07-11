@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PagueVeloz.Domain.Interfaces;
 using PagueVeloz.Infrastructure.Persistence;
 using PagueVeloz.Infrastructure.Persistence.Context;
+using PagueVeloz.Infrastructure.Persistence.Interceptors;
 using PagueVeloz.Infrastructure.Persistence.Repositories;
 
 namespace PagueVeloz.Infrastructure;
@@ -15,8 +16,12 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        services.AddScoped<DomainEventInterceptor>();
+        services.AddDbContext<AppDbContext>((sp, options) =>
+        {
+            options.UseNpgsql(connectionString);
+            options.AddInterceptors(sp.GetRequiredService<DomainEventInterceptor>());
+        });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IAccountRepository, AccountRepository>();

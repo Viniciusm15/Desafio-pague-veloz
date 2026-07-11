@@ -9,11 +9,11 @@ using PagueVeloz.Infrastructure.Persistence.Context;
 
 #nullable disable
 
-namespace PagueVeloz.Infrastructure.Migrations
+namespace PagueVeloz.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260706215257_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260707170717_AddReservedBalanceToAccount")]
+    partial class AddReservedBalanceToAccount
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,9 @@ namespace PagueVeloz.Infrastructure.Migrations
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal>("ReservedBalance")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 

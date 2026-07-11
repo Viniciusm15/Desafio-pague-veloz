@@ -1,8 +1,9 @@
-﻿namespace PagueVeloz.Domain.Entities;
+﻿using PagueVeloz.Domain.Common;
 
-public class Customer
+namespace PagueVeloz.Domain.Entities;
+
+public class Customer : Entity
 {
-    public Guid Id { get; private set; }
     public string Name { get; private set; }
     public string Document { get; private set; }
 

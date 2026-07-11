@@ -1,10 +1,11 @@
-﻿using PagueVeloz.Domain.Enums;
+﻿using PagueVeloz.Domain.Common;
+using PagueVeloz.Domain.Enums;
+using PagueVeloz.Domain.Events;
 
 namespace PagueVeloz.Domain.Entities;
 
-public class Account
+public class Account : Entity
 {
-    public Guid Id { get; private set; }
     public Guid CustomerId { get; private set; }
     public decimal AvailableBalance { get; private set; }
     public decimal ReservedBalance { get; private set; }
@@ -57,6 +58,15 @@ public class Account
 
         var operation = AccountOperation.Succeeded(Id, OperationType.Credit, amount, currency, referenceId, metadata);
         _operations.Add(operation);
+
+        RaiseDomainEvent(new AccountCreditedEvent(
+            AccountId: Id,
+            OperationId: operation.Id,
+            Amount: amount,
+            Currency: currency,
+            ReferenceId: referenceId
+        ));
+
         return operation;
     }
 
@@ -83,6 +93,15 @@ public class Account
 
         var operation = AccountOperation.Succeeded(Id, OperationType.Debit, amount, currency, referenceId, metadata);
         _operations.Add(operation);
+
+        RaiseDomainEvent(new AccountDebitedEvent(
+            AccountId: Id,
+            OperationId: operation.Id,
+            Amount: amount,
+            Currency: currency,
+            ReferenceId: referenceId
+        ));
+
         return operation;
     }
 
@@ -110,6 +129,15 @@ public class Account
 
         var operation = AccountOperation.Succeeded(Id, OperationType.Reserve, amount, currency, referenceId, metadata);
         _operations.Add(operation);
+
+        RaiseDomainEvent(new FundsReservedEvent(
+            AccountId: Id,
+            OperationId: operation.Id,
+            Amount: amount,
+            Currency: currency,
+            ReferenceId: referenceId
+        ));
+
         return operation;
     }
 
@@ -146,6 +174,16 @@ public class Account
 
         var operation = AccountOperation.Succeeded(Id, OperationType.Capture, amount, currency, referenceId, metadata);
         _operations.Add(operation);
+
+        RaiseDomainEvent(new FundsCapturedEvent(
+            AccountId: Id,
+            OperationId: operation.Id,
+            ReservationOperationId: reserveOperationId,
+            Amount: amount,
+            Currency: currency,
+            ReferenceId: referenceId
+        ));
+
         return operation;
     }
 
@@ -196,6 +234,16 @@ public class Account
 
         var operation = AccountOperation.Succeeded(Id, OperationType.Reversal, amount, currency, referenceId, metadata);
         _operations.Add(operation);
+
+        RaiseDomainEvent(new OperationReversedEvent(
+            AccountId: Id,
+            OperationId: operation.Id,
+            OriginalOperationId: originalOperationId,
+            Amount: amount,
+            Currency: currency,
+            ReferenceId: referenceId
+        ));
+
         return operation;
     }
 

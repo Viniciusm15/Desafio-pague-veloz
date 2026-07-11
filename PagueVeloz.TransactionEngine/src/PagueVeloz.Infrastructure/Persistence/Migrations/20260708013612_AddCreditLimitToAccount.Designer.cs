@@ -9,11 +9,11 @@ using PagueVeloz.Infrastructure.Persistence.Context;
 
 #nullable disable
 
-namespace PagueVeloz.Infrastructure.Migrations
+namespace PagueVeloz.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260708221847_AddStatusToAccountOperation")]
-    partial class AddStatusToAccountOperation
+    [Migration("20260708013612_AddCreditLimitToAccount")]
+    partial class AddCreditLimitToAccount
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,13 +48,6 @@ namespace PagueVeloz.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasDefaultValue(0m);
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("Active");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -73,26 +66,8 @@ namespace PagueVeloz.Infrastructure.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("jsonb");
-
                     b.Property<DateTime>("OccurredAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ReferenceId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -101,8 +76,7 @@ namespace PagueVeloz.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId", "ReferenceId")
-                        .IsUnique();
+                    b.HasIndex("AccountId");
 
                     b.ToTable("AccountOperations", (string)null);
                 });

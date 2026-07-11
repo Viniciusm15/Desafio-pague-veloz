@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace PagueVeloz.Infrastructure.Migrations
+namespace PagueVeloz.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class AddReferenceIdToAccountOperation : Migration

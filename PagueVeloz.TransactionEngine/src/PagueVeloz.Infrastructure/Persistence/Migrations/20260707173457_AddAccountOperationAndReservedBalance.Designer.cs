@@ -9,11 +9,11 @@ using PagueVeloz.Infrastructure.Persistence.Context;
 
 #nullable disable
 
-namespace PagueVeloz.Infrastructure.Migrations
+namespace PagueVeloz.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260707170717_AddReservedBalanceToAccount")]
-    partial class AddReservedBalanceToAccount
+    [Migration("20260707173457_AddAccountOperationAndReservedBalance")]
+    partial class AddAccountOperationAndReservedBalance
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,13 +38,42 @@ namespace PagueVeloz.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("ReservedBalance")
-                        .HasColumnType("numeric");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
 
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
                     b.ToTable("Accounts", (string)null);
+                });
+
+            modelBuilder.Entity("PagueVeloz.Domain.Entities.AccountOperation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("AccountOperations", (string)null);
                 });
 
             modelBuilder.Entity("PagueVeloz.Domain.Entities.Customer", b =>
@@ -78,6 +107,20 @@ namespace PagueVeloz.Infrastructure.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PagueVeloz.Domain.Entities.AccountOperation", b =>
+                {
+                    b.HasOne("PagueVeloz.Domain.Entities.Account", null)
+                        .WithMany("Operations")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PagueVeloz.Domain.Entities.Account", b =>
+                {
+                    b.Navigation("Operations");
                 });
 #pragma warning restore 612, 618
         }

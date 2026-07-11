@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /app
+
+COPY workers/PagueVeloz.Worker/PagueVeloz.Worker.csproj workers/PagueVeloz.Worker/
+COPY src/PagueVeloz.Application/PagueVeloz.Application.csproj src/PagueVeloz.Application/
+COPY src/PagueVeloz.Domain/PagueVeloz.Domain.csproj src/PagueVeloz.Domain/
+COPY src/PagueVeloz.Infrastructure/PagueVeloz.Infrastructure.csproj src/PagueVeloz.Infrastructure/
+
+RUN dotnet restore workers/PagueVeloz.Worker/PagueVeloz.Worker.csproj
+
+COPY . .
+WORKDIR /app/workers/PagueVeloz.Worker
+RUN dotnet publish PagueVeloz.Worker.csproj -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "PagueVeloz.Worker.dll"]
