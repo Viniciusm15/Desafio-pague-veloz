@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using PagueVeloz.Application.Commands.Transactions;
 
 namespace PagueVeloz.Application.Validators.Account;

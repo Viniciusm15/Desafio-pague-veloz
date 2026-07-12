@@ -1,5 +1,4 @@
-﻿namespace PagueVeloz.IntegrationTests.Common
-{
-    [CollectionDefinition("Database")]
-    public class DatabaseCollection : ICollectionFixture<IntegrationTestWebAppFactory> { }
-}
+﻿namespace PagueVeloz.IntegrationTests.Common;
+
+[CollectionDefinition("Database")]
+public class DatabaseCollection : ICollectionFixture<IntegrationTestWebAppFactory> { }

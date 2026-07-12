@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using PagueVeloz.Application.DTOs.Customers.Responses;
 
 namespace PagueVeloz.Application.Queries.Customers;

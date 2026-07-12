@@ -1,4 +1,4 @@
-using PagueVeloz.Application;
+﻿using PagueVeloz.Application;
 using PagueVeloz.Infrastructure;
 using PagueVeloz.Infrastructure.Observability.Logging;
 using PagueVeloz.Worker;

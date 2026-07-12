@@ -1,8 +1,7 @@
-﻿namespace PagueVeloz.Infrastructure.Observability
+﻿namespace PagueVeloz.Infrastructure.Observability;
+
+public interface ICorrelationIdProvider
 {
-    public interface ICorrelationIdProvider
-    {
-        string? CorrelationId { get; }
-        void SetCorrelationId(string correlationId);
-    }
+    string? CorrelationId { get; }
+    void SetCorrelationId(string correlationId);
 }

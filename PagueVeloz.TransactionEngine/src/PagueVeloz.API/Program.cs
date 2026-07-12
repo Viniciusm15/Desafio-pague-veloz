@@ -1,4 +1,4 @@
-using PagueVeloz.API.Middlewares;
+﻿using PagueVeloz.API.Middlewares;
 using PagueVeloz.Application;
 using PagueVeloz.Infrastructure;
 using PagueVeloz.Infrastructure.Observability.Logging;

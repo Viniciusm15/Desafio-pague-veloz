@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using PagueVeloz.Application.DTOs.Customers.Responses;
 using PagueVeloz.Domain.Entities;

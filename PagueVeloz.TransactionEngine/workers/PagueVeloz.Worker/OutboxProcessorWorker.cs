@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PagueVeloz.Infrastructure.Persistence.Context;
 using Serilog.Context;
 

@@ -304,10 +304,9 @@ public class AccountTests
         var account = Account.Open(_customerId);
         account.Credit(1000, "cred-001", Currency);
         var reserve = account.Reserve(300, "res-001", Currency);
-        // Captura parcial
         account.Capture(reserve.Id, "cap-001", Currency);
 
-        // Act - tentar capturar novamente a mesma reserva
+        // Act
         var operation = account.Capture(reserve.Id, "cap-002", Currency);
 
         // Assert
