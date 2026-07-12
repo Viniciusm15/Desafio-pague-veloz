@@ -1,5 +1,6 @@
 ﻿using PagueVeloz.Application.DTOs.Transactions.Responses;
 using PagueVeloz.Domain.Entities;
+using PagueVeloz.Domain.Enums;
 
 namespace PagueVeloz.Application.DTOs.Accounts.Responses;
 
@@ -9,7 +10,7 @@ public record AccountResponse(
     long AvailableBalance,
     long ReservedBalance,
     long CreditLimit,
-    string Status,
+    AccountStatus Status,
     IEnumerable<OperationResponse> Operations
 )
 {
@@ -19,7 +20,7 @@ public record AccountResponse(
         account.AvailableBalance,
         account.ReservedBalance,
         account.CreditLimit,
-        account.Status.ToString(),
+        account.Status,
         account.Operations.Select(OperationResponse.From)
     );
 }

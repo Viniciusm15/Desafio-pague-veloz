@@ -5,7 +5,7 @@ namespace PagueVeloz.Application.DTOs.Transactions.Responses;
 
 public record TransactionResponse(
     Guid TransactionId,
-    string Status,
+    OperationStatus Status,
     long Balance,
     long ReservedBalance,
     long AvailableBalance,
@@ -14,7 +14,7 @@ public record TransactionResponse(
 {
     public static TransactionResponse From(Account account, AccountOperation operation) => new(
         operation.Id,
-        operation.Status == OperationStatus.Success ? "success" : "failed",
+        operation.Status,
         account.AvailableBalance + account.ReservedBalance,
         account.ReservedBalance,
         account.AvailableBalance,

@@ -1,15 +1,16 @@
 ﻿using PagueVeloz.Domain.Entities;
+using PagueVeloz.Domain.Enums;
 
 namespace PagueVeloz.Application.DTOs.Transactions.Responses;
 
 public record OperationResponse(
     Guid Id,
     Guid AccountId,
-    string Type,
+    OperationType Type,
     long Amount,
     string Currency,
     string? Metadata,
-    string Status,
+    OperationStatus Status,
     string ReferenceId,
     string? FailureReason,
     DateTime OccurredAt
@@ -18,11 +19,11 @@ public record OperationResponse(
     public static OperationResponse From(AccountOperation operation) => new(
         operation.Id,
         operation.AccountId,
-        operation.Type.ToString(),
+        operation.Type,
         operation.Amount,
         operation.Currency,
         operation.Metadata,
-        operation.Status.ToString(),
+        operation.Status,
         operation.ReferenceId,
         operation.FailureReason,
         operation.OccurredAt
