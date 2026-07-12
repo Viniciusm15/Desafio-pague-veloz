@@ -43,3 +43,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+namespace PagueVeloz.API
+{
+    public partial class Program { }
+}

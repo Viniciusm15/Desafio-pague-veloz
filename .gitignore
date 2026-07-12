@@ -12,3 +12,12 @@ obj/
 
 # Ambiente
 .env
+
+# Testes e cobertura
+TestResults/
+coverage/
+*.coverage
+*.trx
+*.html
+*.xml
+*.json
